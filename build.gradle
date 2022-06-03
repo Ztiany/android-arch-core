@@ -5,6 +5,8 @@ plugins {
     id "kotlin-kapt"
 }
 
+apply plugin: "com.vanniktech.maven.publish"
+
 android {
     compileSdkVersion AppConfig.compileSdkVersion
 
