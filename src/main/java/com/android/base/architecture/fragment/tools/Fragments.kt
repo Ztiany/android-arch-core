@@ -17,7 +17,7 @@ import com.android.base.delegate.fragment.FragmentDelegate
 import com.android.base.delegate.fragment.FragmentDelegateOwner
 import kotlin.reflect.KClass
 
-/*There are some useful methods in this file for you to operate Fragment. But maybe Jetpack Compose is a better choice.*/
+/*There are some useful methods in this file for you to operate Fragment. But maybe Jetpack Navigator or Jetpack Compose is a better choice.*/
 
 /**被此 annotation 标注的方法，表示需要使用 [Fragment] 的全类名作为 [FragmentTransaction] 中相关方法的 flag 参数的实参，比如 add/replace 等*/
 annotation class UsingFragmentClassNameAsFlag
@@ -159,7 +159,10 @@ fun FragmentManager.isFragmentInStack(clazz: Class<out Fragment>): Boolean {
     return false
 }
 
-inline fun FragmentManager.commit(allowStateLoss: Boolean = false, func: EnhanceFragmentTransaction.() -> Unit) {
+inline fun FragmentManager.commit(
+    allowStateLoss: Boolean = false,
+    func: EnhanceFragmentTransaction.() -> Unit
+) {
     val fragmentTransaction = beginTransaction()
     EnhanceFragmentTransaction(this, fragmentTransaction).func()
     if (allowStateLoss) {
@@ -169,7 +172,10 @@ inline fun FragmentManager.commit(allowStateLoss: Boolean = false, func: Enhance
     }
 }
 
-inline fun FragmentManager.commitNow(allowStateLoss: Boolean = false, func: EnhanceFragmentTransaction.() -> Unit) {
+inline fun FragmentManager.commitNow(
+    allowStateLoss: Boolean = false,
+    func: EnhanceFragmentTransaction.() -> Unit
+) {
     val fragmentTransaction = beginTransaction()
     EnhanceFragmentTransaction(this, fragmentTransaction).func()
     if (allowStateLoss) {
@@ -179,7 +185,10 @@ inline fun FragmentManager.commitNow(allowStateLoss: Boolean = false, func: Enha
     }
 }
 
-inline fun FragmentActivity.doFragmentTransaction(allowStateLoss: Boolean = false, func: EnhanceFragmentTransaction.() -> Unit) {
+inline fun FragmentActivity.doFragmentTransaction(
+    allowStateLoss: Boolean = false,
+    func: EnhanceFragmentTransaction.() -> Unit
+) {
     val transaction = supportFragmentManager.beginTransaction()
     EnhanceFragmentTransaction(supportFragmentManager, transaction).func()
     if (allowStateLoss) {
@@ -189,7 +198,10 @@ inline fun FragmentActivity.doFragmentTransaction(allowStateLoss: Boolean = fals
     }
 }
 
-inline fun FragmentActivity.doFragmentTransactionNow(allowStateLoss: Boolean = false, func: EnhanceFragmentTransaction.() -> Unit) {
+inline fun FragmentActivity.doFragmentTransactionNow(
+    allowStateLoss: Boolean = false,
+    func: EnhanceFragmentTransaction.() -> Unit
+) {
     val transaction = supportFragmentManager.beginTransaction()
     EnhanceFragmentTransaction(supportFragmentManager, transaction).func()
     if (allowStateLoss) {
@@ -232,7 +244,10 @@ private fun <T> T.internalCommitNowSafely(
     return delegate.safeCommit(this, transaction)
 }
 
-inline fun Fragment.doFragmentTransaction(allowStateLoss: Boolean = false, func: EnhanceFragmentTransaction.() -> Unit) {
+inline fun Fragment.doFragmentTransaction(
+    allowStateLoss: Boolean = false,
+    func: EnhanceFragmentTransaction.() -> Unit
+) {
     val transaction = childFragmentManager.beginTransaction()
     EnhanceFragmentTransaction(childFragmentManager, transaction).func()
     if (allowStateLoss) {
@@ -242,7 +257,10 @@ inline fun Fragment.doFragmentTransaction(allowStateLoss: Boolean = false, func:
     }
 }
 
-inline fun Fragment.doFragmentTransactionNow(allowStateLoss: Boolean = false, func: EnhanceFragmentTransaction.() -> Unit) {
+inline fun Fragment.doFragmentTransactionNow(
+    allowStateLoss: Boolean = false,
+    func: EnhanceFragmentTransaction.() -> Unit
+) {
     val transaction = childFragmentManager.beginTransaction()
     EnhanceFragmentTransaction(childFragmentManager, transaction).func()
     if (allowStateLoss) {
@@ -285,13 +303,18 @@ fun <T> T.internalCommitNowSafely(
     return delegate.safeCommit(this, transaction)
 }
 
-private class SafelyFragmentTransactionActivityDelegate(private val now: Boolean) : ActivityDelegate<FragmentActivity> {
+private class SafelyFragmentTransactionActivityDelegate(private val now: Boolean) :
+    ActivityDelegate<FragmentActivity> {
 
     private val mPendingTransactions = mutableListOf<FragmentTransaction>()
 
-    fun safeCommit(@NonNull activityDelegateOwner: ActivityDelegateOwner, @NonNull transaction: FragmentTransaction): Boolean {
+    fun safeCommit(
+        @NonNull activityDelegateOwner: ActivityDelegateOwner,
+        @NonNull transaction: FragmentTransaction
+    ): Boolean {
         val status = activityDelegateOwner.getStatus()
-        val isCommitterResumed = (status == ActivityState.CREATE || status == ActivityState.START || status == ActivityState.RESUME)
+        val isCommitterResumed =
+            (status == ActivityState.CREATE || status == ActivityState.START || status == ActivityState.RESUME)
 
         return if (isCommitterResumed) {
             if (now) {
@@ -315,11 +338,15 @@ private class SafelyFragmentTransactionActivityDelegate(private val now: Boolean
 
 }
 
-private class SafelyFragmentTransactionFragmentDelegate(private val now: Boolean) : FragmentDelegate<Fragment> {
+private class SafelyFragmentTransactionFragmentDelegate(private val now: Boolean) :
+    FragmentDelegate<Fragment> {
 
     private val pendingTransactions = mutableListOf<FragmentTransaction>()
 
-    fun safeCommit(@NonNull fragment: Fragment, @NonNull transaction: FragmentTransaction): Boolean {
+    fun safeCommit(
+        @NonNull fragment: Fragment,
+        @NonNull transaction: FragmentTransaction
+    ): Boolean {
         return if (fragment.isResumed) {
             if (now) {
                 transaction.commitNow()
@@ -409,14 +436,21 @@ class EnhanceFragmentTransaction constructor(
     /**
      * 添加 [fragment]，默认使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id，如果 [tag] 为null，则使用 [fragment] 的全限定类名。
      */
-    fun addFragment(fragment: Fragment, tag: String = fragment::class.java.name): FragmentTransaction {
+    fun addFragment(
+        fragment: Fragment,
+        tag: String = fragment::class.java.name
+    ): FragmentTransaction {
         return fragmentTransaction.add(FragmentConfig.defaultContainerId(), fragment, tag)
     }
 
     /**
      * 替换为 [fragment]，id 使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id，如果 [tag] 为null，则使用 [fragment] 的全限定类名。
      */
-    fun replaceFragment(fragment: Fragment, tag: String = fragment::class.java.name, transition: Boolean = true): FragmentTransaction {
+    fun replaceFragment(
+        fragment: Fragment,
+        tag: String = fragment::class.java.name,
+        transition: Boolean = true
+    ): FragmentTransaction {
         if (transition) {
             setOpeningTransition()
         }
@@ -492,7 +526,11 @@ class EnhanceFragmentTransaction constructor(
         return fragmentTransaction.replace(containerViewId, fragment)
     }
 
-    override fun replace(containerViewId: Int, fragment: Fragment, tag: String?): FragmentTransaction {
+    override fun replace(
+        containerViewId: Int,
+        fragment: Fragment,
+        tag: String?
+    ): FragmentTransaction {
         return fragmentTransaction.replace(containerViewId, fragment, tag)
     }
 
@@ -509,7 +547,12 @@ class EnhanceFragmentTransaction constructor(
         return fragmentTransaction.setCustomAnimations(enter, exit)
     }
 
-    override fun setCustomAnimations(enter: Int, exit: Int, popEnter: Int, popExit: Int): FragmentTransaction {
+    override fun setCustomAnimations(
+        enter: Int,
+        exit: Int,
+        popEnter: Int,
+        popExit: Int
+    ): FragmentTransaction {
         return fragmentTransaction.setCustomAnimations(enter, exit, popEnter, popExit)
     }
 

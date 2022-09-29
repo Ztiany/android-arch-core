@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * @author Ztiany
  */
-internal class ApplicationDelegate constructor() {
+internal class ApplicationDelegate {
 
     private lateinit var application: Application
 
