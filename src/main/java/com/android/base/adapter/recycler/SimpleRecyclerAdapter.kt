@@ -28,7 +28,7 @@ abstract class SimpleRecyclerAdapter<T, VB : ViewBinding>(
         if (item != null) {
             bindItem(viewHolder, item)
         } else {
-            bindOnOverPosition(viewHolder)
+            bindOnOverPosition(viewHolder, position)
         }
     }
 
@@ -36,7 +36,7 @@ abstract class SimpleRecyclerAdapter<T, VB : ViewBinding>(
 
     protected open fun onViewHolderCreated(viewHolder: BindingViewHolder<VB>) = Unit
 
-    protected open fun bindOnOverPosition(viewHolder: BindingViewHolder<VB>) {
+    protected open fun bindOnOverPosition(viewHolder: BindingViewHolder<VB>, position: Int) {
 
     }
 
