@@ -4,7 +4,7 @@ import android.os.Looper
 import androidx.lifecycle.MutableLiveData
 import com.android.base.foundation.data.Resource
 
-fun <T : Any?> MutableLiveData<Resource<T>>.postLoading() {
+fun <T : Any?> MutableLiveData<Resource<T>>.setLoading() {
     if (isMainThread()) {
         value = Resource.loading()
     } else {
@@ -12,7 +12,7 @@ fun <T : Any?> MutableLiveData<Resource<T>>.postLoading() {
     }
 }
 
-fun <T : Any?> MutableLiveData<Resource<T>>.postError(error: Throwable) {
+fun <T : Any?> MutableLiveData<Resource<T>>.setError(error: Throwable) {
     if (isMainThread()) {
         value = Resource.error(error)
     } else {
@@ -20,7 +20,7 @@ fun <T : Any?> MutableLiveData<Resource<T>>.postError(error: Throwable) {
     }
 }
 
-fun <T : Any?> MutableLiveData<Resource<T>>.postData(t: T? = null) {
+fun <T : Any?> MutableLiveData<Resource<T>>.setData(t: T? = null) {
     val resource = if (t == null) {
         Resource.noData()
     } else {
