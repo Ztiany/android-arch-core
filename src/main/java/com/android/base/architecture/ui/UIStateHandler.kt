@@ -16,7 +16,7 @@ fun LoadingViewHost.dismissLoadingDialogDelayed(onDismiss: (() -> Unit)? = null)
     dismissLoadingDialog(AndroidSword.minimumShowingDialogMills, onDismiss)
 }
 
-/** config how to handle UI state [Resource]. */
+/** Configure how to handle UI state [Resource]. */
 class ResourceHandlerBuilder<T> {
 
     /** [onLoading] will be called once [Resource] is [Loading]. */
@@ -43,6 +43,8 @@ class ResourceHandlerBuilder<T> {
     /** indicate whether the loading dialog is cancelable. */
     var forceLoading: Boolean = true
 
+    /** mark the event handled so that it will not be handled again. refer [ViewModel One-off event antipatterns](https://manuelvivo.dev/viewmodel-events-antipatterns) for more details. */
+    var clearAfterHanded: Boolean = true
 }
 
 /**
@@ -54,7 +56,9 @@ class ResourceHandlerBuilder<T> {
  *
  * [Resource] 表示请求状态，每次状态变更，[LiveData] 都应该进行通知，该方法订阅 [LiveData] 并对各种状态进行处理。
  * 展示 loading 和对错误进行提示都是自动进行的，通常情况下，只需要提供 [ResourceHandlerBuilder.onSuccess] 对正常的网络结果进行处理即可。
- * 当然如果希望自动处理错误，则可以提供 [ResourceHandlerBuilder.onError] 回调。
+ * 当然如果希望自己处理错误，则可以提供 [ResourceHandlerBuilder.onError] 回调。如果希望自己处理加载中的逻辑，则可以提供 [ResourceHandlerBuilder.onLoading] 回调。
+ *
+ * 另外需要注意的是：[ResourceHandlerBuilder.onSuccess] =  [ResourceHandlerBuilder.onData] + [ResourceHandlerBuilder.onNoData]，请根据你的偏好进行选择。
  */
 fun <H, T> H.handleLiveData(
     data: LiveData<Resource<T>>,
@@ -86,7 +90,7 @@ fun <H, T> H.handleFlowDataWithLifecycle(
     }
 }
 
-/** refer to [handleLiveData]. Notes：Call this method on [Fragment.onViewCreated]. */
+/** refer to [handleLiveData]. Notes：You should call this method on [Fragment.onViewCreated]. */
 fun <H, T> H.handleFlowDataWithViewLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
     data: Flow<Resource<T>>,
@@ -121,6 +125,7 @@ private fun <H, T> H.handleResourceInternal(
 
     when (state) {
         //----------------------------------------loading start
+        // The loading state should always be handled, so we ignore the clearAfterHanded config here.
         is Loading -> {
             if (handlerBuilder.showLoading) {
                 if (handlerBuilder.onLoading == null) {
@@ -137,7 +142,9 @@ private fun <H, T> H.handleResourceInternal(
             if (state.isHandled) {
                 return
             }
-            state.markAsHandled()
+            if (handlerBuilder.clearAfterHanded) {
+                state.markAsHandled()
+            }
 
             dismissLoadingDialogDelayed {
                 val onError = handlerBuilder.onError
@@ -155,7 +162,9 @@ private fun <H, T> H.handleResourceInternal(
             if (state.isHandled) {
                 return
             }
-            state.markAsHandled()
+            if (handlerBuilder.clearAfterHanded) {
+                state.markAsHandled()
+            }
 
             dismissLoadingDialogDelayed {
                 when (state) {
