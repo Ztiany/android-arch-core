@@ -54,7 +54,7 @@ class ResourceHandlerBuilder<T> {
  *
  * [Resource] 表示请求状态，每次状态变更，[LiveData] 都应该进行通知，该方法订阅 [LiveData] 并对各种状态进行处理。
  * 展示 loading 和对错误进行提示都是自动进行的，通常情况下，只需要提供 [ResourceHandlerBuilder.onSuccess] 对正常的网络结果进行处理即可。
- * 当然如果希望自动处理错误，则可以提供 [ResourceHandlerBuilder.onNoData] 回调。
+ * 当然如果希望自动处理错误，则可以提供 [ResourceHandlerBuilder.onError] 回调。
  */
 fun <H, T> H.handleLiveData(
     data: LiveData<Resource<T>>,
@@ -68,7 +68,7 @@ fun <H, T> H.handleLiveData(
     }
 }
 
-/** refer to [handleLiveData]. */
+/** refer to [handleLiveData]. If you are using a [Fragment] with Ui, you probably need to use [handleFlowDataWithViewLifecycle] instead. */
 fun <H, T> H.handleFlowDataWithLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
     data: Flow<Resource<T>>,

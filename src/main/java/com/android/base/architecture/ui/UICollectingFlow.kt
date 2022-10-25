@@ -35,7 +35,7 @@ fun <T> LifecycleOwner.collectFlowOnLifecycle(
  *
  *  Notes: call the method in [Fragment.onViewCreated].
  *
- *  Refer to [A safer way to collect flows from Android UIs](https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda) for detail.
+ *  Refer to [A safer way to collect flows from Android UIs](https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda) for details.
  */
 fun <T> Fragment.collectFlowOnViewLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
