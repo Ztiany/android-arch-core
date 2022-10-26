@@ -33,6 +33,7 @@ public abstract class TabManager {
 
     private final int mOperationType;
     private final boolean mEnableMaxLifecycle;
+    private final Lifecycle.State mMaxLifecycle;
 
     public TabManager(Context context, FragmentManager fragmentManager, Tabs tabs, int containerId) {
         this(context, fragmentManager, tabs, containerId, SHOW_HIDE, true);
@@ -51,6 +52,23 @@ public abstract class TabManager {
         mFragmentManager = fragmentManager;
         mOperationType = operationType;
         mEnableMaxLifecycle = enableMaxLifecycle;
+        mMaxLifecycle = Lifecycle.State.STARTED;
+    }
+
+    /**
+     * @param operationType {@link #ATTACH_DETACH} or {@link #SHOW_HIDE}
+     */
+    public TabManager(Context context, FragmentManager fragmentManager, Tabs tabs, int containerId, int operationType, Lifecycle.State maxLifeState) {
+        if (operationType != ATTACH_DETACH && operationType != SHOW_HIDE) {
+            throw new IllegalArgumentException("the operationType must be ATTACH_DETACH or SHOW_HIDE");
+        }
+        mMainTabs = tabs;
+        mContainerId = containerId;
+        mContext = context;
+        mFragmentManager = fragmentManager;
+        mOperationType = operationType;
+        mEnableMaxLifecycle = true;
+        mMaxLifecycle = maxLifeState;
     }
 
     public final void setup(Bundle bundle) {
@@ -101,7 +119,7 @@ public abstract class TabManager {
             fragmentTransaction.detach(fragment);
         }
         if (mEnableMaxLifecycle) {
-            fragmentTransaction.setMaxLifecycle(fragment, Lifecycle.State.STARTED);
+            fragmentTransaction.setMaxLifecycle(fragment, mMaxLifecycle);
         }
     }
 
@@ -112,7 +130,7 @@ public abstract class TabManager {
             fragmentTransaction.attach(fragment);
         }
         if (mEnableMaxLifecycle) {
-            fragmentTransaction.setMaxLifecycle(fragment, Lifecycle.State.RESUMED);
+            fragmentTransaction.setMaxLifecycle(fragment, mMaxLifecycle);
         }
     }
 
