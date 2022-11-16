@@ -45,7 +45,7 @@
 
     <declare-styleable name="ScrollChildSwipeRefreshLayout">
         <attr name="srl_target_id" format="reference" />
-        <!-- a array of colors  -->
+        <!-- an array of colors  -->
         <attr name="srl_color_scheme" format="reference" />
         <!--restore refresh state-->
         <attr name="srl_restore_refresh_status" format="boolean" />
