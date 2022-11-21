@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -14,19 +15,17 @@ import kotlinx.coroutines.launch
  *
  * Notes: call the method in [Activity.onCreate].
  *
- * @see [collectFlowOnViewLifecycle]
+ * @see [collectFlowRepeatOnViewLifecycle]
  */
-fun <T> LifecycleOwner.collectFlowOnLifecycle(
+fun <T> LifecycleOwner.collectFlowRepeatOnLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
     data: Flow<T>,
-    onResult: (result: T) -> Unit
+    onResult: suspend (result: T) -> Unit
 ) {
-    lifecycleScope.launch {
-        repeatOnLifecycle(activeState) {
-            data.onEach {
-                onResult(it)
-            }.launchIn(this)
-        }
+    runRepeatOnLifecycle(activeState) {
+        data.onEach {
+            onResult(it)
+        }.launchIn(this)
     }
 }
 
@@ -37,61 +36,42 @@ fun <T> LifecycleOwner.collectFlowOnLifecycle(
  *
  *  Refer to [A safer way to collect flows from Android UIs](https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda) for details.
  */
-fun <T> Fragment.collectFlowOnViewLifecycle(
+fun <T> Fragment.collectFlowRepeatOnViewLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
     data: Flow<T>,
-    onResult: (result: T) -> Unit
+    onResult: suspend (result: T) -> Unit
 ) {
-    viewLifecycleOwner.lifecycleScope.launch {
-        repeatOnLifecycle(activeState) {
-            data.onEach {
-                onResult(it)
-            }.launchIn(this)
-        }
+    runRepeatOnViewLifecycle(activeState) {
+        data.onEach {
+            onResult(it)
+        }.launchIn(this)
     }
 }
 
-/** Collect flow in [Activity] or [Fragment] just once.
- *
- *  Notes: Normally, You should not use this method in a [Fragment], unless the [Fragment] has no UI.
- */
-fun <T> LifecycleOwner.collectFlowOnceOnLifecycle(
+/** A extension method to call repeatOnLifecycle on lifecycleScope. */
+fun LifecycleOwner.runRepeatOnLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
-    data: Flow<T>,
-    onResult: (result: T) -> Unit
+    block: suspend CoroutineScope.() -> Unit
 ) {
-    val job = data.onEach {
-        onResult(it)
-    }.launchIn(lifecycleScope)
-
-    val observer = object : LifecycleEventObserver {
-        override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-            if (!source.lifecycle.currentState.isAtLeast(activeState)) {
-                job.cancel()
-                lifecycle.removeObserver(this)
-            }
+    lifecycleScope.launch {
+        repeatOnLifecycle(activeState) {
+            block(this)
         }
-    }
-
-    lifecycle.addObserver(observer)
-
-    job.invokeOnCompletion {
-        lifecycle.removeObserver(observer)
     }
 }
 
 /**
- *  Collect flow in [Fragment] just once.
+ * A extension method to call repeatOnLifecycle on viewLifecycleScope.
  *
- *  Notes:
- *  1. Call this method after [Fragment.onViewCreated].
- *  2. when  [Fragment.onDestroyView] is called, the collecting ends.
+ *  Notes: call the method in [Fragment.onViewCreated].
  */
-fun <T> Fragment.collectFlowOnceOnViewLifecycle(
-    data: Flow<T>,
-    onResult: (result: T) -> Unit
+fun Fragment.runRepeatOnViewLifecycle(
+    activeState: Lifecycle.State = Lifecycle.State.STARTED,
+    block: suspend CoroutineScope.() -> Unit
 ) {
-    data.onEach {
-        onResult(it)
-    }.launchIn(viewLifecycleOwner.lifecycleScope)
+    viewLifecycleOwner.lifecycleScope.launch {
+        repeatOnLifecycle(activeState) {
+            block(this)
+        }
+    }
 }

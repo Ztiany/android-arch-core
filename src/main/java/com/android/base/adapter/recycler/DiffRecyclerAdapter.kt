@@ -23,6 +23,9 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
     private val asyncListDiffer: AsyncListDiffer<T>
 
     init {
+        if(headerCount <0){
+            throw IllegalArgumentException("headerCount can not be a negative number.")
+        }
         val builder = AsyncDifferConfig.Builder(itemCallback)
         if (executor != null) {
             builder.setBackgroundThreadExecutor(executor)
@@ -53,7 +56,7 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
     }
 
     override fun add(element: T) {
-        val newList = newList()
+        val newList = copyCurrent()
         newList.add(element)
         asyncListDiffer.submitList(newList)
     }
@@ -63,7 +66,7 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         if (position > getDataSize()) {
             position = getDataSize()
         }
-        val newList = newList()
+        val newList = copyCurrent()
         newList.add(position, element)
         asyncListDiffer.submitList(newList)
     }
@@ -72,7 +75,7 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         if (elements.isEmpty()) {
             return
         }
-        val newList = newList()
+        val newList = copyCurrent()
         newList.addAll(elements)
         asyncListDiffer.submitList(newList)
     }
@@ -81,7 +84,7 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         if (elements.isEmpty()) {
             return
         }
-        val newList = newList()
+        val newList = copyCurrent()
         for (element in elements) {
             if (element == null) {
                 continue
@@ -97,7 +100,7 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         if (elements.isEmpty()) {
             return
         }
-        val newList = newList()
+        val newList = copyCurrent()
         if (realLocation > newList.size) {
             realLocation = newList.size
         }
@@ -109,14 +112,14 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         if (!contains(oldElement)) {
             return
         }
-        val newList = newList()
+        val newList = copyCurrent()
         newList[newList.indexOf(oldElement)] = newElement
         asyncListDiffer.submitList(newList)
     }
 
     override fun replaceAt(index: Int, element: T) {
         if (getDataSize() > index) {
-            val newList = newList()
+            val newList = copyCurrent()
             newList[index] = element
             asyncListDiffer.submitList(newList)
         }
@@ -129,7 +132,7 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
 
     override fun remove(element: T): Boolean {
         if (contains(element)) {
-            val newList = newList()
+            val newList = copyCurrent()
             newList.remove(element)
             asyncListDiffer.submitList(newList)
             return true
@@ -141,7 +144,7 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         if (elements.isEmpty() || isEmpty() || !getList().containsAll(elements)) {
             return
         }
-        val newList = newList()
+        val newList = copyCurrent()
         newList.removeAll(elements)
         asyncListDiffer.submitList(newList)
     }
@@ -152,7 +155,7 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
 
     override fun removeAt(index: Int) {
         if (getDataSize() > index) {
-            val newList = newList()
+            val newList = copyCurrent()
             newList.removeAt(index)
             asyncListDiffer.submitList(newList)
         }
@@ -175,12 +178,12 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
     }
 
     override fun removeIf(filter: (T) -> Boolean) {
-        val newList = newList()
+        val newList = copyCurrent()
         newList.removeAll(filter)
         asyncListDiffer.submitList(newList)
     }
 
-    private fun newList(): MutableList<T> {
+    private fun copyCurrent(): MutableList<T> {
         return mutableListOf<T>().apply {
             addAll(getList())
         }
@@ -209,7 +212,7 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
     override fun swipePosition(fromPosition: Int, toPosition: Int) {
         val intRange = getList().indices
         if (fromPosition != toPosition && fromPosition in intRange && toPosition in intRange) {
-            val newList = newList()
+            val newList = copyCurrent()
             Collections.swap(newList, fromPosition, toPosition)
             submitList(newList)
         }

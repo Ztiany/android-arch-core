@@ -37,6 +37,7 @@ public class MultiStateView extends FrameLayout {
     private View mContentView;
 
     private boolean mDisableOperationWhenRequesting = false;
+    private boolean mAlwaysShowContentView = false;
 
     @Nullable
     private StateListener mListener;
@@ -79,6 +80,7 @@ public class MultiStateView extends FrameLayout {
         mChildren.put(SERVER_ERROR, new ViewHolder(serverErrorViewResId));
 
         mDisableOperationWhenRequesting = a.getBoolean(R.styleable.MultiStateView_msv_disable_when_requesting, false);
+        mAlwaysShowContentView = a.getBoolean(R.styleable.MultiStateView_msv_always_show_content, false);
 
         ensureInitState(a.getInt(R.styleable.MultiStateView_msv_viewState, CONTENT));
 
@@ -267,6 +269,7 @@ public class MultiStateView extends FrameLayout {
      * Shows the {@link View} based on the {@link ViewState}
      */
     private void setView() {
+        // handle BLANK status.
         if (mViewState == BLANK) {
             int size = mChildren.size();
             View view;
@@ -279,17 +282,16 @@ public class MultiStateView extends FrameLayout {
             return;
         }
 
+        // handle other status.
         View curStateView = ensureStateView(mViewState);
         int size = mChildren.size();
-
         for (int i = 0; i < size; i++) {
             ViewHolder viewHolder = mChildren.valueAt(i);
             if (viewHolder.mView == null) {
                 continue;
             }
-
             if (viewHolder.mView != curStateView) {
-                if (mViewState == REQUESTING && viewHolder.mView == mContentView) {
+                if ((mViewState == REQUESTING || mAlwaysShowContentView) && viewHolder.mView == mContentView) {
                     viewHolder.mView.setVisibility(VISIBLE);
                 } else {
                     viewHolder.mView.setVisibility(GONE);
@@ -297,7 +299,9 @@ public class MultiStateView extends FrameLayout {
             }
         }
 
+        //handle visibility.
         curStateView.setVisibility(VISIBLE);
+        curStateView.bringToFront();
     }
 
     @Override

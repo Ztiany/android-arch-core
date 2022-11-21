@@ -2,7 +2,11 @@
 <resources>
 
     <declare-styleable name="MultiStateView">
+        <!-- disable interaction while state is requesting. the default is false. -->
         <attr name="msv_disable_when_requesting" format="boolean" />
+        <!-- always show content view. the default is false. -->
+        <attr name="msv_always_show_content" format="boolean" />
+
         <attr name="msv_loadingView" format="reference" />
         <attr name="msv_requestingView" format="reference" />
         <attr name="msv_emptyView" format="reference" />

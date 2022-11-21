@@ -1,12 +1,27 @@
 package com.android.base.architecture.ui
 
+import android.util.SparseArray
+import android.util.SparseBooleanArray
+import android.util.SparseIntArray
+import android.util.SparseLongArray
+import androidx.core.util.isEmpty
 import com.android.base.AndroidSword
 import com.android.base.architecture.ui.state.StateLayoutHost
 import com.android.base.foundation.data.*
 
 private fun <T> newDefaultChecker(): ((T) -> Boolean) {
     return { t ->
-        (t is CharSequence && (t.isEmpty() || t.isBlank())) || (t is Collection<*> && t.isEmpty()) || (t is Map<*, *> && t.isEmpty())
+        (t is CharSequence && (t.isEmpty() || t.isBlank()))
+                || (t is Collection<*> && t.isEmpty())
+                || (t is Map<*, *> && t.isEmpty())
+                || (t is SparseArray<*> && t.isEmpty())
+                || (t is SparseIntArray && t.isEmpty())
+                || (t is SparseLongArray && t.isEmpty())
+                || (t is SparseBooleanArray && t.isEmpty())
+                || (t is Array<*> && t.isEmpty())
+                || (t is IntArray && t.isEmpty())
+                || (t is LongArray && t.isEmpty())
+                || (t is BooleanArray && t.isEmpty())
     }
 }
 
