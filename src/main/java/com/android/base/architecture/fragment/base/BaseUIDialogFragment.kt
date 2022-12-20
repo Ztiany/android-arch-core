@@ -57,12 +57,15 @@ abstract class BaseUIDialogFragment<VB : ViewBinding> : BaseDialogFragment(), Lo
     internal open fun internalOnViewPrepared(view: View, savedInstanceState: Bundle?) {}
 
     /**
-     * View is prepared, If [androidx.fragment.app.Fragment.onCreateView] reuse the layout, it will be called once
+     * Called when the view is prepared. If [setReuseView] is called and passes true as the parameter, it will be called just once.
      *
      * @param view view of fragment
      */
     protected open fun onViewPrepared(view: View, savedInstanceState: Bundle?) {}
 
+    /**
+     * Call it before [onCreateView] is called.
+     */
     protected fun setReuseView(reuseTheView: Boolean) {
         reuseView.reuseTheView = reuseTheView
     }

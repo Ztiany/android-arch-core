@@ -61,16 +61,14 @@ abstract class BaseUIFragment<VB : ViewBinding> : BaseFragment(), LoadingViewHos
     internal open fun internalOnViewPrepared(view: View, savedInstanceState: Bundle?) {}
 
     /**
-     * View is prepared, If [androidx.fragment.app.Fragment.onCreateView] reuse the layout, it will be called once
+     * Called when the view is prepared. If [setReuseView] is called and passes true as the parameter, it will be called just once.
      *
      * @param view view of fragment
      */
     protected open fun onViewPrepared(view: View, savedInstanceState: Bundle?) {}
 
     /**
-     * 1. Call it before [onCreateView] if you want.
-     * 2. The reason it exist is that Hilt can not work properly when passing a default value to Fragment's constructor. In details, the default value is commonly a layout id.
-     * 3. 对于 Fragment 的 View，默认为不缓存，因为可能在某些特点场景下才会需要用到，另外，设置缓存 Fragment 的 View 可能有未知的问题。
+     * Call it before [onCreateView] is called.
      */
     protected fun setReuseView(reuseTheView: Boolean) {
         reuseView.reuseTheView = reuseTheView
