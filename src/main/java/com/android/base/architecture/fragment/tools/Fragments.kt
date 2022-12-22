@@ -17,7 +17,9 @@ import com.android.base.delegate.fragment.FragmentDelegate
 import com.android.base.delegate.fragment.FragmentDelegateOwner
 import kotlin.reflect.KClass
 
-/*There are some useful methods in this file for you to operate Fragment. But maybe Jetpack Navigator or Jetpack Compose is a better choice.*/
+/* =========================================================================================================================== */
+/* There are some useful methods in this file for you to operate Fragment. But maybe Jetpack Navigator or Jetpack Compose is a better choice. */
+/* =========================================================================================================================== */
 
 /**被此 annotation 标注的方法，表示需要使用 [Fragment] 的全类名作为 [FragmentTransaction] 中相关方法的 flag 参数的实参，比如 add/replace 等*/
 annotation class UsingFragmentClassNameAsFlag
@@ -379,9 +381,9 @@ class EnhanceFragmentTransaction constructor(
     //------------------------------------------------------------------------------------------------
 
     /**
-     * 把 [fragment] 添加到回退栈中，并 hide 其他 fragment，
-     * 如果 [containerId]==0，则使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id，
-     * 如果 [tag] == null 则使用 fragment 对应 class 的全限定类名。
+     * 把指定 [fragment] 添加到回退栈中，并 hide 其他的 fragment，
+     * 如果 [containerId]==0，则使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id 作为容器 id，
+     * 如果 [tag] == null 则使用指定 [fragment] 对应 class 的全限定类名。
      */
     fun addToStack(
         containerId: Int = 0,
@@ -403,9 +405,9 @@ class EnhanceFragmentTransaction constructor(
     }
 
     /**
-     * 以 replace 方式把 [fragment] 添加到回退栈中，
-     * 如果 [containerId]==0，则使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id，
-     * 如果 [tag] == null 则使用 fragment 对应 class 的全限定类名。
+     * 以 replace 方式把指定 [fragment] 添加到回退栈中，
+     * 如果 [containerId]==0，则使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id 作为容器 id，
+     * 如果 [tag] == null 则使用指定 [fragment] 对应 class 的全限定类名。
      * 此方法可能导致 Fragment 转场动画错乱。
      */
     fun replaceToStack(
@@ -434,7 +436,7 @@ class EnhanceFragmentTransaction constructor(
     }
 
     /**
-     * 添加 [fragment]，默认使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id，如果 [tag] 为null，则使用 [fragment] 的全限定类名。
+     * 添加指定的 [fragment]，默认使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id 作为容器 id，如果 [tag] 为 null，则使用指定 [fragment] 的全限定类名。
      */
     fun addFragment(
         fragment: Fragment,
@@ -444,7 +446,7 @@ class EnhanceFragmentTransaction constructor(
     }
 
     /**
-     * 替换为 [fragment]，id 使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id，如果 [tag] 为null，则使用 [fragment] 的全限定类名。
+     * 替换为指定的 [fragment]，id 使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id 作为容器 id，如果 [tag] 为 null，则使用指定 [fragment] 的全限定类名。
      */
     fun replaceFragment(
         fragment: Fragment,
@@ -457,7 +459,7 @@ class EnhanceFragmentTransaction constructor(
         return fragmentTransaction.replace(FragmentConfig.defaultContainerId(), fragment, tag)
     }
 
-    /** 隐藏所有的 fragment */
+    /** 隐藏所有的 Fragment。 */
     private fun hideFragments() {
         for (fragment in fragmentManager.fragments) {
             if (fragment != null && fragment.view != null && fragment.isVisible) {
@@ -467,7 +469,7 @@ class EnhanceFragmentTransaction constructor(
         }
     }
 
-    /** 隐藏第一个可见的 fragment */
+    /** 隐藏第一个可见的 Fragment。 */
     private fun hideTopFragment() {
         fragmentManager.fragments.lastOrNull { it.isVisible && it.view != null }?.let {
             fragmentTransaction.setMaxLifecycle(it, Lifecycle.State.STARTED)
