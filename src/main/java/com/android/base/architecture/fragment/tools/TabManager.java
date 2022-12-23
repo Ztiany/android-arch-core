@@ -130,7 +130,7 @@ public abstract class TabManager {
             fragmentTransaction.attach(fragment);
         }
         if (mEnableMaxLifecycle) {
-            fragmentTransaction.setMaxLifecycle(fragment, mMaxLifecycle);
+            fragmentTransaction.setMaxLifecycle(fragment, Lifecycle.State.RESUMED);
         }
     }
 
