@@ -18,10 +18,10 @@ import com.android.base.delegate.fragment.FragmentDelegateOwner
 import kotlin.reflect.KClass
 
 /* =========================================================================================================================== */
-/* There are some useful methods in this file for you to operate Fragment. But maybe Jetpack Navigator or Jetpack Compose is a better choice. */
+/* There are some practical methods in this file for you to operate [Fragment]s. But definitely, Jetpack Navigator or Jetpack Compose is a better choice if you have included one of them. */
 /* =========================================================================================================================== */
 
-/**被此 annotation 标注的方法，表示需要使用 [Fragment] 的全类名作为 [FragmentTransaction] 中相关方法的 flag 参数的实参，比如 add/replace 等*/
+/**被此 annotation 标注的方法，表示需要使用 [Fragment] 的全类名作为 [FragmentTransaction] 中相关方法的 flag 参数的实参，比如 add/replace 等。*/
 annotation class UsingFragmentClassNameAsFlag
 
 @JvmOverloads
@@ -120,7 +120,7 @@ fun FragmentManager.popBackTo(flag: String, immediate: Boolean = false) {
 }
 
 /**
- * 回到对应的 Fragment，如果 Fragment 在栈中，则该 Fragment 回到栈顶，如果 Fragment 不在栈中，则做一次弹栈操作。
+ * 回到对应的 Fragment，如果 Fragment 在栈中，则该 Fragment 回到栈顶，如果 Fragment 不在栈中，则做一次出栈操作。
  */
 @UsingFragmentClassNameAsFlag
 fun FragmentManager.backToFragment(flag: String, immediate: Boolean = false) {
@@ -305,8 +305,9 @@ fun <T> T.internalCommitNowSafely(
     return delegate.safeCommit(this, transaction)
 }
 
-private class SafelyFragmentTransactionActivityDelegate(private val now: Boolean) :
-    ActivityDelegate<FragmentActivity> {
+private class SafelyFragmentTransactionActivityDelegate(
+    private val commitNow: Boolean
+) : ActivityDelegate<FragmentActivity> {
 
     private val mPendingTransactions = mutableListOf<FragmentTransaction>()
 
@@ -319,7 +320,7 @@ private class SafelyFragmentTransactionActivityDelegate(private val now: Boolean
             (status == ActivityState.CREATE || status == ActivityState.START || status == ActivityState.RESUME)
 
         return if (isCommitterResumed) {
-            if (now) {
+            if (commitNow) {
                 transaction.commitNow()
             } else {
                 transaction.commit()
@@ -340,8 +341,9 @@ private class SafelyFragmentTransactionActivityDelegate(private val now: Boolean
 
 }
 
-private class SafelyFragmentTransactionFragmentDelegate(private val now: Boolean) :
-    FragmentDelegate<Fragment> {
+private class SafelyFragmentTransactionFragmentDelegate(
+    private val commitNow: Boolean
+) : FragmentDelegate<Fragment> {
 
     private val pendingTransactions = mutableListOf<FragmentTransaction>()
 
@@ -350,7 +352,7 @@ private class SafelyFragmentTransactionFragmentDelegate(private val now: Boolean
         @NonNull transaction: FragmentTransaction
     ): Boolean {
         return if (fragment.isResumed) {
-            if (now) {
+            if (commitNow) {
                 transaction.commitNow()
             } else {
                 transaction.commit()
@@ -492,10 +494,12 @@ class EnhanceFragmentTransaction constructor(
     //------------------------------------------------------------------------------------------------
     // original functions
     //------------------------------------------------------------------------------------------------
+    @Deprecated("")
     override fun setBreadCrumbShortTitle(res: Int): FragmentTransaction {
         return fragmentTransaction.setBreadCrumbShortTitle(res)
     }
 
+    @Deprecated("")
     override fun setBreadCrumbShortTitle(text: CharSequence?): FragmentTransaction {
         return fragmentTransaction.setBreadCrumbShortTitle(text)
     }
@@ -566,6 +570,7 @@ class EnhanceFragmentTransaction constructor(
         return fragmentTransaction.disallowAddToBackStack()
     }
 
+    @Deprecated("")
     override fun setTransitionStyle(styleRes: Int): FragmentTransaction {
         return fragmentTransaction.setTransitionStyle(styleRes)
     }
@@ -598,10 +603,12 @@ class EnhanceFragmentTransaction constructor(
         return fragmentTransaction.addSharedElement(sharedElement, name)
     }
 
+    @Deprecated("")
     override fun setBreadCrumbTitle(res: Int): FragmentTransaction {
         return fragmentTransaction.setBreadCrumbTitle(res)
     }
 
+    @Deprecated("")
     override fun setBreadCrumbTitle(text: CharSequence?): FragmentTransaction {
         return fragmentTransaction.setBreadCrumbTitle(text)
     }
@@ -610,30 +617,30 @@ class EnhanceFragmentTransaction constructor(
         return fragmentTransaction.setReorderingAllowed(reorderingAllowed)
     }
 
-    @Deprecated("commit will be called automatically")
+    @Deprecated("commit will be called automatically.")
     override fun commit(): Int {
-        throw UnsupportedOperationException("commit will be called automatically")
+        throw UnsupportedOperationException("commit will be called automatically.")
     }
 
-    @Deprecated("commitAllowingStateLoss will be called automatically")
+    @Deprecated("commitAllowingStateLoss will be called automatically.")
     override fun commitAllowingStateLoss(): Int {
-        throw UnsupportedOperationException("commitAllowingStateLoss will be called automatically")
+        throw UnsupportedOperationException("commitAllowingStateLoss will be called automatically.")
     }
 
     @Deprecated(
-        "commitNow will be called automatically",
+        "commitNow will be called automatically.",
         ReplaceWith("throw UnsupportedOperationException(\"commitNow will be called automatically\")")
     )
     override fun commitNow() {
-        throw UnsupportedOperationException("commitNow will be called automatically")
+        throw UnsupportedOperationException("commitNow will be called automatically.")
     }
 
     @Deprecated(
-        "commitNowAllowingStateLoss will be called automatically",
+        "commitNowAllowingStateLoss will be called automatically.",
         ReplaceWith("throw UnsupportedOperationException(\"commitNowAllowingStateLoss will be called automatically\")")
     )
     override fun commitNowAllowingStateLoss() {
-        throw UnsupportedOperationException("commitNowAllowingStateLoss will be called automatically")
+        throw UnsupportedOperationException("commitNowAllowingStateLoss will be called automatically.")
     }
 
 }

@@ -71,3 +71,7 @@ interface DataManager<T> {
     fun getDataSize(): Int
 
 }
+
+fun <T> DataManager<T>.requireItem(position: Int): T {
+    return getItem(position) ?: throw NullPointerException("There is no item for position ${position}.")
+}

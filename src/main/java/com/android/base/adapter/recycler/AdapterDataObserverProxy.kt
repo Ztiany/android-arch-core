@@ -3,7 +3,10 @@ package com.android.base.adapter.recycler
 import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 
 /**
- * refer [Paging With Header](http://www.cezcb.com/2018/08/24/PagingWithHeader) and [Android 官方架构组件 Paging-Ex: 为分页列表添加 Header 和 Footer](https://juejin.im/post/6844903814189826062)
+ * refer to [Paging With Header](http://www.cezcb.com/2018/08/24/PagingWithHeader)
+ * and
+ * [Android 官方架构组件 Paging-Ex: 为分页列表添加 Header 和 Footer](https://juejin.im/post/6844903814189826062)
+ * for details.
  */
 internal class AdapterDataObserverProxy(private val adapterDataObserver: AdapterDataObserver, private val headerCount: Int) : AdapterDataObserver() {
 
