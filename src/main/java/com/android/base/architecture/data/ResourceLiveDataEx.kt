@@ -34,6 +34,15 @@ fun <T : Any?> MutableLiveData<Resource<T>>.setData(t: T? = null) {
     }
 }
 
+fun <T : Any?> MutableLiveData<Resource<T>>.setSuccess() {
+    val resource: Resource<T> = Resource.noData()
+    if (isMainThread()) {
+        value = resource
+    } else {
+        postValue(resource)
+    }
+}
+
 private fun isMainThread(): Boolean {
     return Looper.myLooper() == Looper.getMainLooper()
 }

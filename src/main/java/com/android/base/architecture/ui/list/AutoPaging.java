@@ -23,7 +23,7 @@ public class AutoPaging extends Paging {
 
     @Override
     public int getLoadingPage() {
-        if (mRefreshListLayoutHost.isRefreshing()) {
+        if (mRefreshListLayoutHost.isRefreshing() || !mRefreshListLayoutHost.isLoadingMore()) {
             return getPageStart();
         } else {
             return getCurrentPage() + 1;
