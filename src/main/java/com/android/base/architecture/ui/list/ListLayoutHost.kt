@@ -24,3 +24,7 @@ interface ListLayoutHost<T> : StateLayoutHost {
     var isLoadMoreEnable: Boolean
 
 }
+
+fun ListLayoutHost<*>.isLoadingFirstPage(): Boolean {
+    return isRefreshing() || !isLoadingMore()
+}

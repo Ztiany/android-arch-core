@@ -12,7 +12,7 @@ fun <T> ListLayoutHost<T>.handleListResource(
     onEmpty: (() -> Unit)? = null
 ) {
     when (resource) {
-        is Loading -> showLoadingIfEmpty()
+        is Loading -> handleListLoading()
         is Error -> handleListError(resource.error)
         is Success<List<T>> -> {
             when (resource) {
@@ -84,7 +84,7 @@ fun ListLayoutHost<*>.handleListError(throwable: Throwable) {
     }
 }
 
-fun ListLayoutHost<*>.showLoadingIfEmpty() {
+fun ListLayoutHost<*>.handleListLoading() {
     if (isEmpty()) {
         if (isRefreshing()) {
             showBlank()
@@ -98,7 +98,7 @@ fun ListLayoutHost<*>.showLoadingIfEmpty() {
 
 fun <T> ListLayoutHost<T>.submitListResource(resource: Resource<List<T>>, hasMore: Boolean, onEmpty: (() -> Unit)? = null) {
     when (resource) {
-        is Loading -> showLoadingIfEmpty()
+        is Loading -> handleListLoading()
         is Error -> handleListError(resource.error)
         is Success<List<T>> -> {
             when (resource) {

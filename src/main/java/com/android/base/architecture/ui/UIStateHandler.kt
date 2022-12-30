@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 fun LoadingViewHost.dismissLoadingDialogDelayed(onDismiss: (() -> Unit)? = null) {
-    dismissLoadingDialog(AndroidSword.minimumShowingDialogMills, onDismiss)
+    dismissLoadingDialog(AndroidSword.minimalDialogDisplayTime, onDismiss)
 }
 
 /** Configure how to handle UI state [Resource]. */

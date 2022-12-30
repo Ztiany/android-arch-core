@@ -11,7 +11,6 @@ import com.android.base.architecture.ui.list.RefreshLoadMoreViewFactory
 import com.android.base.architecture.ui.list.RefreshLoadMoreViewFactory.Factory
 import com.android.base.architecture.ui.list.RefreshViewFactory
 import com.android.base.architecture.ui.loading.LoadingViewHost
-import kotlinx.coroutines.flow.Flow
 
 /**
  * A set of useful tools for android development, just like a sword.
@@ -29,8 +28,8 @@ object AndroidSword {
     /** 错误类型分类器 */
     var errorClassifier: ErrorClassifier? = null
 
-    /** dialog 最小展示时间  */
-    var minimumShowingDialogMills: Long = 0
+    /** dialog 最小展示时间【单位：毫秒】  */
+    var minimalDialogDisplayTime: Long = 0
 
     /** 用于创建 LoadingView*/
     var sLoadingViewHostFactory: ((Context) -> LoadingViewHost)? = null
