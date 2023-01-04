@@ -1,5 +1,6 @@
 package com.android.base.architecture.fragment.base
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -101,24 +102,24 @@ abstract class BaseUIFragment<VB : ViewBinding> : BaseFragment(), LoadingViewHos
         return null
     }
 
-    override fun showLoadingDialog() {
+    override fun showLoadingDialog(): Dialog {
         recentShowingDialogTime = System.currentTimeMillis()
-        loadingView().showLoadingDialog(true)
+        return loadingView().showLoadingDialog(true)
     }
 
-    override fun showLoadingDialog(cancelable: Boolean) {
+    override fun showLoadingDialog(cancelable: Boolean): Dialog {
         recentShowingDialogTime = System.currentTimeMillis()
-        loadingView().showLoadingDialog(cancelable)
+        return loadingView().showLoadingDialog(cancelable)
     }
 
-    override fun showLoadingDialog(message: CharSequence, cancelable: Boolean) {
+    override fun showLoadingDialog(message: CharSequence, cancelable: Boolean): Dialog {
         recentShowingDialogTime = System.currentTimeMillis()
-        loadingView().showLoadingDialog(message, cancelable)
+        return loadingView().showLoadingDialog(message, cancelable)
     }
 
-    override fun showLoadingDialog(@StringRes messageId: Int, cancelable: Boolean) {
+    override fun showLoadingDialog(@StringRes messageId: Int, cancelable: Boolean): Dialog {
         recentShowingDialogTime = System.currentTimeMillis()
-        loadingView().showLoadingDialog(messageId, cancelable)
+        return loadingView().showLoadingDialog(messageId, cancelable)
     }
 
     override fun dismissLoadingDialog() {
