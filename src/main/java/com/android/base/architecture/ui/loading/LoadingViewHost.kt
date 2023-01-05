@@ -12,10 +12,13 @@ interface LoadingViewHost {
 
     fun showLoadingDialog(): Dialog
 
+    /** Display a loading dialog. If the dialog is already showing, then the message will be reset. */
     fun showLoadingDialog(cancelable: Boolean): Dialog
 
+    /** Display a loading dialog. If the dialog is already showing, then the message will be updated. */
     fun showLoadingDialog(message: CharSequence, cancelable: Boolean): Dialog
 
+    /** Display a loading dialog. If the dialog is already showing, then the message will be updated. */
     fun showLoadingDialog(@StringRes messageId: Int, cancelable: Boolean): Dialog
 
     fun dismissLoadingDialog()

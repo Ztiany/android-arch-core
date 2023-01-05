@@ -20,11 +20,11 @@ fun <T : Any?> MutableLiveData<Resource<T>>.setError(error: Throwable) {
     }
 }
 
-fun <T : Any?> MutableLiveData<Resource<T>>.setData(t: T? = null) {
-    val resource = if (t == null) {
+fun <T : Any?> MutableLiveData<Resource<T>>.setData(data: T?) {
+    val resource = if (data == null) {
         Resource.noData()
     } else {
-        Resource.success(t)
+        Resource.success(data)
     }
 
     if (isMainThread()) {
