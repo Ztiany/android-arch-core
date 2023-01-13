@@ -27,17 +27,22 @@ private fun <T> newDefaultChecker(): ((T) -> Boolean) {
 
 fun <T> StateLayoutHost.handleSateResource(
     resource: Resource<T>,
-    ifEmpty: ((T) -> Boolean)? = newDefaultChecker(),
+    isEmpty: ((T) -> Boolean)? = newDefaultChecker(),
+    onError: ((Throwable) -> Unit)? = null,
     onEmpty: (() -> Unit)? = null,
     onResult: ((T) -> Unit)
 ) {
     when (resource) {
         is Loading -> showLoadingLayout()
-        is Error -> handleStateError(resource.error)
+        is Error -> {
+            if (onError == null) {
+                handleStateError(resource.error)
+            }
+        }
         is Success<T> -> {
             when (resource) {
-                is NoData -> handleStateResult(null, ifEmpty, onEmpty, onResult)
-                is Data<T> -> handleStateResult(resource.value, ifEmpty, onEmpty, onResult)
+                is NoData -> handleStateResult(null, isEmpty, onEmpty, onResult)
+                is Data<T> -> handleStateResult(resource.value, isEmpty, onEmpty, onResult)
             }
         }
     }
