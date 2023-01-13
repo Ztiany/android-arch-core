@@ -6,25 +6,32 @@ import com.android.base.foundation.data.*
 
 //----------------------------------------------Loading In List And With State----------------------------------------------
 
-fun <T> ListLayoutHost<T>.handleListResource(
-    resource: Resource<List<T>>,
+fun <D, E> ListLayoutHost<D>.handleListResource(
+    resource: Resource<List<D>, E>,
     hasMore: (() -> Boolean)? = null,
-    onEmpty: (() -> Unit)? = null
+    onEmpty: (() -> Unit)? = null,
+    onError: ((Throwable, E?) -> Unit)? = null
 ) {
     when (resource) {
         is Loading -> handleListLoading()
-        is Error -> handleListError(resource.error)
-        is Success<List<T>> -> {
+        is Error -> {
+            if (onError == null) {
+                handleListError(resource.error)
+            } else {
+                onError(resource.error, resource.reason)
+            }
+        }
+        is Success<List<D>> -> {
             when (resource) {
                 is NoData -> handleListResult(null, hasMore, onEmpty)
-                is Data<List<T>> -> handleListResult(resource.value, hasMore, onEmpty)
+                is Data<List<D>> -> handleListResult(resource.value, hasMore, onEmpty)
             }
         }
     }
 }
 
-fun <T> ListLayoutHost<T>.handleListResult(
-    list: List<T>?,
+fun <D> ListLayoutHost<D>.handleListResult(
+    list: List<D>?,
     hasMore: (() -> Boolean)? = null,
     onEmpty: (() -> Unit)? = null
 ) {
@@ -96,20 +103,31 @@ fun ListLayoutHost<*>.handleListLoading() {
 
 //----------------------------------------------Fully Submit List And With State----------------------------------------------
 
-fun <T> ListLayoutHost<T>.submitListResource(resource: Resource<List<T>>, hasMore: Boolean, onEmpty: (() -> Unit)? = null) {
+fun <D, E> ListLayoutHost<D>.submitListResource(
+    resource: Resource<List<D>, E>,
+    hasMore: Boolean,
+    onEmpty: (() -> Unit)? = null,
+    onError: ((Throwable, E?) -> Unit)? = null
+) {
     when (resource) {
         is Loading -> handleListLoading()
-        is Error -> handleListError(resource.error)
-        is Success<List<T>> -> {
+        is Error -> {
+            if (onError == null) {
+                handleListError(resource.error)
+            } else {
+                onError(resource.error, resource.reason)
+            }
+        }
+        is Success<List<D>> -> {
             when (resource) {
                 is NoData -> submitListResult(null, hasMore, onEmpty)
-                is Data<List<T>> -> submitListResult(resource.value, hasMore, onEmpty)
+                is Data<List<D>> -> submitListResult(resource.value, hasMore, onEmpty)
             }
         }
     }
 }
 
-fun <T> ListLayoutHost<T>.submitListResult(list: List<T>?, hasMore: Boolean, onEmpty: (() -> Unit)? = null) {
+fun <D> ListLayoutHost<D>.submitListResult(list: List<D>?, hasMore: Boolean, onEmpty: (() -> Unit)? = null) {
     if (isRefreshEnable && isRefreshing()) {
         refreshCompleted()
     }

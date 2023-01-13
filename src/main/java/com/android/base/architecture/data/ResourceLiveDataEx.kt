@@ -4,7 +4,7 @@ import android.os.Looper
 import androidx.lifecycle.MutableLiveData
 import com.android.base.foundation.data.Resource
 
-fun <T : Any?> MutableLiveData<Resource<T>>.setLoading() {
+fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setLoading() {
     if (isMainThread()) {
         value = Resource.loading()
     } else {
@@ -12,16 +12,16 @@ fun <T : Any?> MutableLiveData<Resource<T>>.setLoading() {
     }
 }
 
-fun <T : Any?> MutableLiveData<Resource<T>>.setError(error: Throwable) {
+fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setError(error: Throwable, reason: E? = null) {
     if (isMainThread()) {
-        value = Resource.error(error)
+        value = Resource.error(error, reason)
     } else {
-        postValue(Resource.error(error))
+        postValue(Resource.error(error, reason))
     }
 }
 
-fun <T : Any?> MutableLiveData<Resource<T>>.setData(data: T?) {
-    val resource = if (data == null) {
+fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setData(data: D?) {
+    val resource: Resource<D, E> = if (data == null) {
         Resource.noData()
     } else {
         Resource.success(data)
@@ -34,8 +34,8 @@ fun <T : Any?> MutableLiveData<Resource<T>>.setData(data: T?) {
     }
 }
 
-fun <T : Any?> MutableLiveData<Resource<T>>.setSuccess() {
-    val resource: Resource<T> = Resource.noData()
+fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setSuccess() {
+    val resource: Resource<D, E> = Resource.noData()
     if (isMainThread()) {
         value = resource
     } else {

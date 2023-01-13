@@ -17,19 +17,19 @@ fun LoadingViewHost.dismissLoadingDialogDelayed(onDismiss: (() -> Unit)? = null)
 }
 
 /** Configure how to handle UI state [Resource]. */
-class ResourceHandlerBuilder<T> {
+class ResourceHandlerBuilder<D, E> {
 
     /** [onLoading] will be called once [Resource] is [Loading]. */
     var onLoading: (() -> Unit)? = null
 
     /** [onError] will be called once [Resource] is [Error]. */
-    var onError: ((Throwable) -> Unit)? = null
+    var onError: ((Throwable, E?) -> Unit)? = null
 
     /** [onSuccess] will always be called once [Resource] is [Success]. */
-    var onSuccess: ((T?) -> Unit)? = null
+    var onSuccess: ((D?) -> Unit)? = null
 
     /** [onData] will be called only when [Resource] is [Data]. */
-    var onData: ((T) -> Unit)? = null
+    var onData: ((D) -> Unit)? = null
 
     /** [onNoData] will be called only when [Resource] is [NoData]. */
     var onNoData: (() -> Unit)? = null
@@ -60,11 +60,11 @@ class ResourceHandlerBuilder<T> {
  *
  * 另外需要注意的是：[ResourceHandlerBuilder.onSuccess] =  [ResourceHandlerBuilder.onData] + [ResourceHandlerBuilder.onNoData]，请根据你的偏好进行选择。
  */
-fun <H, T> H.handleLiveData(
-    data: LiveData<Resource<T>>,
-    handlerBuilder: ResourceHandlerBuilder<T>.() -> Unit
+fun <H, D, E> H.handleLiveData(
+    data: LiveData<Resource<D, E>>,
+    handlerBuilder: ResourceHandlerBuilder<D, E>.() -> Unit
 ) where H : LoadingViewHost, H : LifecycleOwner {
-    val builder = ResourceHandlerBuilder<T>()
+    val builder = ResourceHandlerBuilder<D, E>()
     handlerBuilder(builder)
 
     data.observe(this) { state ->
@@ -73,12 +73,12 @@ fun <H, T> H.handleLiveData(
 }
 
 /** refer to [handleLiveData]. If you are using a [Fragment] with Ui, you probably need to use [handleFlowDataWithViewLifecycle] instead. */
-fun <H, T> H.handleFlowDataWithLifecycle(
+fun <H, D, E> H.handleFlowDataWithLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
-    data: Flow<Resource<T>>,
-    handlerBuilder: ResourceHandlerBuilder<T>.() -> Unit
+    data: Flow<Resource<D, E>>,
+    handlerBuilder: ResourceHandlerBuilder<D, E>.() -> Unit
 ) where H : LoadingViewHost, H : LifecycleOwner {
-    val builder = ResourceHandlerBuilder<T>()
+    val builder = ResourceHandlerBuilder<D, E>()
     handlerBuilder(builder)
 
     lifecycleScope.launch {
@@ -91,12 +91,12 @@ fun <H, T> H.handleFlowDataWithLifecycle(
 }
 
 /** refer to [handleLiveData]. Notes：You should call this method on [Fragment.onViewCreated]. */
-fun <H, T> H.handleFlowDataWithViewLifecycle(
+fun <H, D, E> H.handleFlowDataWithViewLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
-    data: Flow<Resource<T>>,
-    handlerBuilder: ResourceHandlerBuilder<T>.() -> Unit
+    data: Flow<Resource<D, E>>,
+    handlerBuilder: ResourceHandlerBuilder<D, E>.() -> Unit
 ) where H : LoadingViewHost, H : Fragment {
-    val builder = ResourceHandlerBuilder<T>()
+    val builder = ResourceHandlerBuilder<D, E>()
     handlerBuilder(builder)
 
     viewLifecycleOwner.lifecycleScope.launch {
@@ -109,18 +109,18 @@ fun <H, T> H.handleFlowDataWithViewLifecycle(
 }
 
 /** refer to [handleLiveData]. */
-fun <H, T> H.handleResource(
-    state: Resource<T>,
-    handlerBuilder: ResourceHandlerBuilder<T>.() -> Unit
+fun <H, D, E> H.handleResource(
+    state: Resource<D, E>,
+    handlerBuilder: ResourceHandlerBuilder<D, E>.() -> Unit
 ) where H : LoadingViewHost, H : LifecycleOwner {
-    val builder = ResourceHandlerBuilder<T>()
+    val builder = ResourceHandlerBuilder<D, E>()
     handlerBuilder(builder)
     handleResourceInternal(state, builder)
 }
 
-private fun <H, T> H.handleResourceInternal(
-    state: Resource<T>,
-    handlerBuilder: ResourceHandlerBuilder<T>
+private fun <H, D, E> H.handleResourceInternal(
+    state: Resource<D, E>,
+    handlerBuilder: ResourceHandlerBuilder<D, E>
 ) where H : LoadingViewHost, H : LifecycleOwner {
 
     when (state) {
@@ -149,7 +149,7 @@ private fun <H, T> H.handleResourceInternal(
             dismissLoadingDialogDelayed {
                 val onError = handlerBuilder.onError
                 if (onError != null) {
-                    onError(state.error)
+                    onError(state.error, state.reason)
                 } else {
                     showMessage(AndroidSword.errorConvert.convert(state.error))
                 }
@@ -158,7 +158,7 @@ private fun <H, T> H.handleResourceInternal(
         //----------------------------------------error end
 
         //----------------------------------------success start
-        is Success<T> -> {
+        is Success<D> -> {
             if (state.isHandled) {
                 return
             }
@@ -172,7 +172,7 @@ private fun <H, T> H.handleResourceInternal(
                         handlerBuilder.onSuccess?.invoke(null)
                         handlerBuilder.onNoData?.invoke()
                     }
-                    is Data<T> -> {
+                    is Data<D> -> {
                         handlerBuilder.onSuccess?.invoke(state.value)
                         handlerBuilder.onData?.invoke(state.value)
                     }

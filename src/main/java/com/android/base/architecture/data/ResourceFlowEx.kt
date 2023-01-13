@@ -4,53 +4,53 @@ import com.android.base.foundation.data.Resource
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 
-suspend fun <T : Any?> MutableSharedFlow<Resource<T>>.emitLoading() {
+suspend fun <D : Any?, E : Any?> MutableSharedFlow<Resource<D, E>>.emitLoading() {
     emit(Resource.loading())
 }
 
-suspend fun <T : Any?> MutableSharedFlow<Resource<T>>.emitError(error: Throwable) {
+suspend fun <D : Any?, E : Any?> MutableSharedFlow<Resource<D, E>>.emitError(error: Throwable) {
     emit(Resource.error(error))
 }
 
-suspend fun <T : Any?> MutableSharedFlow<Resource<T>>.emitData(t: T? = null) {
-    val resource = if (t == null) {
+suspend fun <D : Any?, E : Any?> MutableSharedFlow<Resource<D, E>>.emitData(data: D?) {
+    val resource: Resource<D, E> = if (data == null) {
         Resource.noData()
     } else {
-        Resource.success(t)
+        Resource.success(data)
     }
     emit(resource)
 }
 
-suspend fun <T : Any?> MutableStateFlow<Resource<T>>.emitLoading() {
+suspend fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.emitLoading() {
     emit(Resource.loading())
 }
 
-suspend fun <T : Any?> MutableStateFlow<Resource<T>>.emitError(error: Throwable) {
+suspend fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.emitError(error: Throwable) {
     emit(Resource.error(error))
 }
 
-suspend fun <T : Any?> MutableStateFlow<Resource<T>>.emitData(t: T? = null) {
-    val resource = if (t == null) {
+suspend fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.emitData(data: D?) {
+    val resource: Resource<D, E> = if (data == null) {
         Resource.noData()
     } else {
-        Resource.success(t)
+        Resource.success(data)
     }
     emit(resource)
 }
 
-fun <T : Any?> MutableStateFlow<Resource<T>>.setLoading() {
+fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.setLoading() {
     value = Resource.loading()
 }
 
-fun <T : Any?> MutableStateFlow<Resource<T>>.setError(error: Throwable) {
+fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.setError(error: Throwable) {
     value = Resource.error(error)
 }
 
-fun <T : Any?> MutableStateFlow<Resource<T>>.setData(t: T? = null) {
-    val resource = if (t == null) {
+fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.setData(data: D? = null) {
+    val resource: Resource<D, E> = if (data == null) {
         Resource.noData()
     } else {
-        Resource.success(t)
+        Resource.success(data)
     }
     value = resource
 }
