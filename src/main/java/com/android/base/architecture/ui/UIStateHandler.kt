@@ -11,6 +11,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import androidx.lifecycle.observe as observeDeprecated
+
+private fun <T> LifecycleOwner.dummyKeep(liveData: LiveData<T>) {
+    liveData.observeDeprecated(this) {}
+}
 
 fun LoadingViewHost.dismissLoadingDialogDelayed(onDismiss: (() -> Unit)? = null) {
     dismissLoadingDialog(AndroidSword.minimalDialogDisplayTime, onDismiss)
@@ -64,22 +69,24 @@ fun <H, D, E> H.handleLiveData(
     data: LiveData<Resource<D, E>>,
     handlerBuilder: ResourceHandlerBuilder<D, E>.() -> Unit
 ) where H : LoadingViewHost, H : LifecycleOwner {
-    val builder = ResourceHandlerBuilder<D, E>()
-    handlerBuilder(builder)
+    val builder = ResourceHandlerBuilder<D, E>().apply {
+        handlerBuilder()
+    }
 
     data.observe(this) { state ->
         handleResourceInternal(state, builder)
     }
 }
 
-/** refer to [handleLiveData]. If you are using a [Fragment] with Ui, you probably need to use [handleFlowDataWithViewLifecycle] instead. */
-fun <H, D, E> H.handleFlowDataWithLifecycle(
+/** refers to [handleLiveData] for details. If you are using a [Fragment] with Ui, you probably need to use [handleFlowWithViewLifecycle] instead. */
+fun <H, D, E> H.handleFlowWithLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
     data: Flow<Resource<D, E>>,
     handlerBuilder: ResourceHandlerBuilder<D, E>.() -> Unit
 ) where H : LoadingViewHost, H : LifecycleOwner {
-    val builder = ResourceHandlerBuilder<D, E>()
-    handlerBuilder(builder)
+    val builder = ResourceHandlerBuilder<D, E>().apply {
+        handlerBuilder()
+    }
 
     lifecycleScope.launch {
         repeatOnLifecycle(activeState) {
@@ -90,14 +97,15 @@ fun <H, D, E> H.handleFlowDataWithLifecycle(
     }
 }
 
-/** refer to [handleLiveData]. Notes：You should call this method on [Fragment.onViewCreated]. */
-fun <H, D, E> H.handleFlowDataWithViewLifecycle(
+/** refers to [handleLiveData] for details. Notes：You should call this method in [Fragment.onViewCreated]. */
+fun <H, D, E> H.handleFlowWithViewLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
     data: Flow<Resource<D, E>>,
     handlerBuilder: ResourceHandlerBuilder<D, E>.() -> Unit
 ) where H : LoadingViewHost, H : Fragment {
-    val builder = ResourceHandlerBuilder<D, E>()
-    handlerBuilder(builder)
+    val builder = ResourceHandlerBuilder<D, E>().apply {
+        handlerBuilder()
+    }
 
     viewLifecycleOwner.lifecycleScope.launch {
         repeatOnLifecycle(activeState) {
@@ -108,13 +116,14 @@ fun <H, D, E> H.handleFlowDataWithViewLifecycle(
     }
 }
 
-/** refer to [handleLiveData]. */
+/** refers to [handleLiveData] for details. */
 fun <H, D, E> H.handleResource(
     state: Resource<D, E>,
     handlerBuilder: ResourceHandlerBuilder<D, E>.() -> Unit
 ) where H : LoadingViewHost, H : LifecycleOwner {
-    val builder = ResourceHandlerBuilder<D, E>()
-    handlerBuilder(builder)
+    val builder = ResourceHandlerBuilder<D, E>().apply {
+        handlerBuilder()
+    }
     handleResourceInternal(state, builder)
 }
 
