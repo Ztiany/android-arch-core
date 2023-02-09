@@ -22,10 +22,10 @@ fun LoadingViewHost.dismissLoadingDialogDelayed(onDismiss: (() -> Unit)? = null)
 }
 
 /** Configure how to handle UI state [Resource]. */
-class ResourceHandlerBuilder<D, E> {
+class ResourceHandlerBuilder<L, D, E> {
 
     /** [onLoading] will be called once [Resource] is [Loading]. */
-    var onLoading: (() -> Unit)? = null
+    var onLoading: ((L?) -> Unit)? = null
 
     /** [onError] will be called once [Resource] is [Error]. */
     var onError: ((Throwable, E?) -> Unit)? = null
@@ -65,11 +65,11 @@ class ResourceHandlerBuilder<D, E> {
  *
  * 另外需要注意的是：[ResourceHandlerBuilder.onSuccess] =  [ResourceHandlerBuilder.onData] + [ResourceHandlerBuilder.onNoData]，请根据你的偏好进行选择。
  */
-fun <H, D, E> H.handleLiveData(
-    data: LiveData<Resource<D, E>>,
-    handlerBuilder: ResourceHandlerBuilder<D, E>.() -> Unit
+fun <H, L, D, E> H.handleLiveData(
+    data: LiveData<Resource<L, D, E>>,
+    handlerBuilder: ResourceHandlerBuilder<L, D, E>.() -> Unit
 ) where H : LoadingViewHost, H : LifecycleOwner {
-    val builder = ResourceHandlerBuilder<D, E>().apply {
+    val builder = ResourceHandlerBuilder<L, D, E>().apply {
         handlerBuilder()
     }
 
@@ -79,12 +79,12 @@ fun <H, D, E> H.handleLiveData(
 }
 
 /** refers to [handleLiveData] for details. If you are using a [Fragment] with Ui, you probably need to use [handleFlowWithViewLifecycle] instead. */
-fun <H, D, E> H.handleFlowWithLifecycle(
+fun <H, L, D, E> H.handleFlowWithLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
-    data: Flow<Resource<D, E>>,
-    handlerBuilder: ResourceHandlerBuilder<D, E>.() -> Unit
+    data: Flow<Resource<L, D, E>>,
+    handlerBuilder: ResourceHandlerBuilder<L, D, E>.() -> Unit
 ) where H : LoadingViewHost, H : LifecycleOwner {
-    val builder = ResourceHandlerBuilder<D, E>().apply {
+    val builder = ResourceHandlerBuilder<L, D, E>().apply {
         handlerBuilder()
     }
 
@@ -98,12 +98,12 @@ fun <H, D, E> H.handleFlowWithLifecycle(
 }
 
 /** refers to [handleLiveData] for details. Notes：You should call this method in [Fragment.onViewCreated]. */
-fun <H, D, E> H.handleFlowWithViewLifecycle(
+fun <H, L, D, E> H.handleFlowWithViewLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
-    data: Flow<Resource<D, E>>,
-    handlerBuilder: ResourceHandlerBuilder<D, E>.() -> Unit
+    data: Flow<Resource<L, D, E>>,
+    handlerBuilder: ResourceHandlerBuilder<L, D, E>.() -> Unit
 ) where H : LoadingViewHost, H : Fragment {
-    val builder = ResourceHandlerBuilder<D, E>().apply {
+    val builder = ResourceHandlerBuilder<L, D, E>().apply {
         handlerBuilder()
     }
 
@@ -117,22 +117,26 @@ fun <H, D, E> H.handleFlowWithViewLifecycle(
 }
 
 /** refers to [handleLiveData] for details. */
-fun <H, D, E> H.handleResource(
-    state: Resource<D, E>,
-    handlerBuilder: ResourceHandlerBuilder<D, E>.() -> Unit
+fun <H, L, D, E> H.handleResource(
+    state: Resource<L, D, E>,
+    handlerBuilder: ResourceHandlerBuilder<L, D, E>.() -> Unit
 ) where H : LoadingViewHost, H : LifecycleOwner {
-    val builder = ResourceHandlerBuilder<D, E>().apply {
+    val builder = ResourceHandlerBuilder<L, D, E>().apply {
         handlerBuilder()
     }
     handleResourceInternal(state, builder)
 }
 
-private fun <H, D, E> H.handleResourceInternal(
-    state: Resource<D, E>,
-    handlerBuilder: ResourceHandlerBuilder<D, E>
+private fun <H, L, D, E> H.handleResourceInternal(
+    state: Resource<L, D, E>,
+    handlerBuilder: ResourceHandlerBuilder<L, D, E>
 ) where H : LoadingViewHost, H : LifecycleOwner {
 
     when (state) {
+        is Uninitialized -> {
+            /*no op*/
+        }
+
         //----------------------------------------loading start
         // The loading state should always be handled, so we ignore the clearAfterHanded config here.
         is Loading -> {
@@ -140,7 +144,7 @@ private fun <H, D, E> H.handleResourceInternal(
                 if (handlerBuilder.onLoading == null) {
                     showLoadingDialog(handlerBuilder.loadingMessage, !handlerBuilder.forceLoading)
                 } else {
-                    handlerBuilder.onLoading?.invoke()
+                    handlerBuilder.onLoading?.invoke(state.step)
                 }
             }
         }

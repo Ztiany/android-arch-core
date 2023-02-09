@@ -11,7 +11,7 @@ import com.android.base.architecture.ui.CommonId
 import com.android.base.architecture.ui.list.ListLayoutHost
 import com.android.base.architecture.ui.list.Paging
 import com.android.base.architecture.ui.state.StateLayoutConfig
-import com.ztiany.loadmore.adapter.LoadMore
+import com.ztiany.loadmore.adapter.LoadMoreController
 import kotlin.properties.Delegates
 
 /**
@@ -20,7 +20,7 @@ import kotlin.properties.Delegates
  */
 abstract class BaseListDialogFragment<T, VB : ViewBinding> : BaseUIDialogFragment<VB>(), ListLayoutHost<T> {
 
-    private var loadMore: LoadMore? = null
+    private var loadMoreImpl: LoadMoreController? = null
 
     private var listLayoutHostImpl: ListLayoutHost<T> by Delegates.notNull()
 
@@ -52,12 +52,13 @@ abstract class BaseListDialogFragment<T, VB : ViewBinding> : BaseUIDialogFragmen
             vb.root.findViewById(CommonId.STATE_ID),
             vb.root.findViewById(CommonId.REFRESH_ID)
         ) {
+
             this.enableLoadMore = enableLoadMore
             this.triggerLoadMoreByScroll = triggerLoadMoreByScroll
 
             /*if load-more is enabled.*/
             onLoadMoreCreated = {
-                loadMore = it
+                loadMoreImpl = it
                 recyclerView.adapter = it
             }
 
@@ -106,15 +107,15 @@ abstract class BaseListDialogFragment<T, VB : ViewBinding> : BaseUIDialogFragmen
         return listLayoutHostImpl.getPager()
     }
 
-    val loadMoreController: LoadMore
-        get() = loadMore ?: throw NullPointerException("You didn't enable load-more.")
+    val loadMoreController: LoadMoreController
+        get() = loadMoreImpl ?: throw NullPointerException("You didn't enable load-more.")
 
     override fun loadMoreCompleted(hasMore: Boolean) {
-        loadMore?.loadCompleted(hasMore)
+        loadMoreImpl?.loadCompleted(hasMore)
     }
 
     override fun loadMoreFailed() {
-        loadMore?.loadFail()
+        loadMoreImpl?.loadFail()
     }
 
     override var isLoadMoreEnable: Boolean

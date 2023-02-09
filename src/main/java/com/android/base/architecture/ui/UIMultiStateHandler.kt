@@ -25,14 +25,17 @@ private fun <D> newDefaultChecker(): ((D) -> Boolean) {
     }
 }
 
-fun <D, E> StateLayoutHost.handleSateResource(
-    resource: Resource<D, E>,
+fun <L, D, E> StateLayoutHost.handleSateResource(
+    resource: Resource<L, D, E>,
     isEmpty: ((D) -> Boolean)? = newDefaultChecker(),
     onError: ((Throwable, E?) -> Unit)? = null,
     onEmpty: (() -> Unit)? = null,
     onResult: ((D) -> Unit)
 ) {
     when (resource) {
+        is Uninitialized -> {
+            /*no op*/
+        }
         is Loading -> showLoadingLayout()
         is Error -> {
             if (onError == null) {

@@ -6,13 +6,16 @@ import com.android.base.foundation.data.*
 
 //----------------------------------------------Loading In List And With State----------------------------------------------
 
-fun <D, E> ListLayoutHost<D>.handleListResource(
-    resource: Resource<List<D>, E>,
+fun <L, D, E> ListLayoutHost<D>.handleListResource(
+    resource: Resource<L, List<D>, E>,
     hasMore: (() -> Boolean)? = null,
     onEmpty: (() -> Unit)? = null,
     onError: ((Throwable, E?) -> Unit)? = null
 ) {
     when (resource) {
+        is Uninitialized -> {
+            /*no op*/
+        }
         is Loading -> handleListLoading()
         is Error -> {
             if (onError == null) {
@@ -103,13 +106,16 @@ fun ListLayoutHost<*>.handleListLoading() {
 
 //----------------------------------------------Fully Submit List And With State----------------------------------------------
 
-fun <D, E> ListLayoutHost<D>.submitListResource(
-    resource: Resource<List<D>, E>,
+fun <L, D, E> ListLayoutHost<D>.submitListResource(
+    resource: Resource<L, List<D>, E>,
     hasMore: Boolean,
     onEmpty: (() -> Unit)? = null,
     onError: ((Throwable, E?) -> Unit)? = null
 ) {
     when (resource) {
+        is Uninitialized -> {
+            /*no op*/
+        }
         is Loading -> handleListLoading()
         is Error -> {
             if (onError == null) {

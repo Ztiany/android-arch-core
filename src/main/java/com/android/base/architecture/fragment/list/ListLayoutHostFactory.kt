@@ -7,14 +7,17 @@ import com.android.base.architecture.ui.list.*
 import com.android.base.architecture.ui.state.OnRetryActionListener
 import com.android.base.architecture.ui.state.StateLayout
 import com.android.base.architecture.ui.state.StateLayoutConfig
+import com.ztiany.loadmore.adapter.Direction
+import com.ztiany.loadmore.adapter.LoadMoreAdapter
+import com.ztiany.loadmore.adapter.LoadMoreController
 import com.ztiany.loadmore.adapter.OnLoadMoreListener
-import com.ztiany.loadmore.adapter.WrapperAdapter
 
 class ListLayoutHostConfig {
     var enableLoadMore: Boolean = false
     var triggerLoadMoreByScroll: Boolean = false
+    @Direction var scrollDirection: Int = Direction.UP
     var onRetry: ((state: Int) -> Unit)? = null
-    var onLoadMoreCreated: ((WrapperAdapter) -> Unit)? = null
+    var onLoadMoreCreated: ((LoadMoreAdapter) -> Unit)? = null
     var onRefresh: (() -> Unit)? = null
     var onLoadMore: (() -> Unit)? = null
 }
@@ -37,8 +40,9 @@ fun <T, A> buildListLayoutHost(
 
     val hostConfig = ListLayoutHostConfig().apply(config)
 
-    val loadMore = if (hostConfig.enableLoadMore) {
-        WrapperAdapter.wrap(dataManager, hostConfig.triggerLoadMoreByScroll).also {
+    val loadMoreController: LoadMoreController? = if (hostConfig.enableLoadMore) {
+        LoadMoreAdapter.wrap(dataManager, hostConfig.triggerLoadMoreByScroll).also {
+            it.setLoadMoreDirection(hostConfig.scrollDirection)
             hostConfig.onLoadMoreCreated?.invoke(it)
         }
     } else {
@@ -51,8 +55,8 @@ fun <T, A> buildListLayoutHost(
         }
 
         override fun canRefresh(): Boolean {
-            return if (loadMore != null) {
-                !loadMore.isLoadingMore
+            return if (loadMoreController != null) {
+                !loadMoreController.isLoadingMore
             } else true
         }
     })
@@ -63,9 +67,9 @@ fun <T, A> buildListLayoutHost(
         }
     })
 
-    var enableLoadMore = loadMore != null
+    var enableLoadMore = loadMoreController != null
 
-    loadMore?.setOnLoadMoreListener(object : OnLoadMoreListener {
+    loadMoreController?.setOnLoadMoreListener(object : OnLoadMoreListener {
         override fun onLoadMore() {
             hostConfig.onLoadMore?.invoke()
         }
@@ -90,11 +94,11 @@ fun <T, A> buildListLayoutHost(
         }
 
         override fun loadMoreCompleted(hasMore: Boolean) {
-            loadMore?.loadCompleted(hasMore)
+            loadMoreController?.loadCompleted(hasMore)
         }
 
         override fun loadMoreFailed() {
-            loadMore?.loadFail()
+            loadMoreController?.loadFail()
         }
 
         override fun getPager(): Paging {
@@ -106,11 +110,11 @@ fun <T, A> buildListLayoutHost(
         }
 
         override fun isLoadingMore(): Boolean {
-            return loadMore?.isLoadingMore ?: false
+            return loadMoreController?.isLoadingMore ?: false
         }
 
         override var isLoadMoreEnable: Boolean
-            get() = loadMore != null && enableLoadMore
+            get() = loadMoreController != null && enableLoadMore
             set(value) {
                 enableLoadMore = value
             }

@@ -4,16 +4,16 @@ import com.android.base.foundation.data.Resource
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 
-suspend fun <D : Any?, E : Any?> MutableSharedFlow<Resource<D, E>>.emitLoading() {
-    emit(Resource.loading())
+suspend fun <L : Any?, D : Any?, E : Any?> MutableSharedFlow<Resource<L, D, E>>.emitLoading(step: L? = null) {
+    emit(Resource.loading(step))
 }
 
-suspend fun <D : Any?, E : Any?> MutableSharedFlow<Resource<D, E>>.emitError(error: Throwable) {
+suspend fun <L : Any?, D : Any?, E : Any?> MutableSharedFlow<Resource<L, D, E>>.emitError(error: Throwable) {
     emit(Resource.error(error))
 }
 
-suspend fun <D : Any?, E : Any?> MutableSharedFlow<Resource<D, E>>.emitData(data: D?) {
-    val resource: Resource<D, E> = if (data == null) {
+suspend fun <L : Any?, D : Any?, E : Any?> MutableSharedFlow<Resource<L, D, E>>.emitData(data: D?) {
+    val resource: Resource<L, D, E> = if (data == null) {
         Resource.noData()
     } else {
         Resource.success(data)
@@ -21,16 +21,16 @@ suspend fun <D : Any?, E : Any?> MutableSharedFlow<Resource<D, E>>.emitData(data
     emit(resource)
 }
 
-suspend fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.emitLoading() {
-    emit(Resource.loading())
+suspend fun <L : Any?, D : Any?, E : Any?> MutableStateFlow<Resource<L, D, E>>.emitLoading(step: L? = null) {
+    emit(Resource.loading(step))
 }
 
-suspend fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.emitError(error: Throwable) {
+suspend fun <L : Any?, D : Any?, E : Any?> MutableStateFlow<Resource<L, D, E>>.emitError(error: Throwable) {
     emit(Resource.error(error))
 }
 
-suspend fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.emitData(data: D?) {
-    val resource: Resource<D, E> = if (data == null) {
+suspend fun <L : Any?, D : Any?, E : Any?> MutableStateFlow<Resource<L, D, E>>.emitData(data: D?) {
+    val resource: Resource<L, D, E> = if (data == null) {
         Resource.noData()
     } else {
         Resource.success(data)
@@ -38,16 +38,16 @@ suspend fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.emitData(data:
     emit(resource)
 }
 
-fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.setLoading() {
-    value = Resource.loading()
+fun <L : Any?, D : Any?, E : Any?> MutableStateFlow<Resource<L, D, E>>.setLoading(step: L? = null) {
+    value = Resource.loading(step)
 }
 
-fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.setError(error: Throwable) {
+fun <L : Any?, D : Any?, E : Any?> MutableStateFlow<Resource<L, D, E>>.setError(error: Throwable) {
     value = Resource.error(error)
 }
 
-fun <D : Any?, E : Any?> MutableStateFlow<Resource<D, E>>.setData(data: D? = null) {
-    val resource: Resource<D, E> = if (data == null) {
+fun <L : Any?, D : Any?, E : Any?> MutableStateFlow<Resource<L, D, E>>.setData(data: D? = null) {
+    val resource: Resource<L, D, E> = if (data == null) {
         Resource.noData()
     } else {
         Resource.success(data)

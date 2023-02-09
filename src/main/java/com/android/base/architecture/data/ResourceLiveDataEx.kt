@@ -5,15 +5,15 @@ import androidx.lifecycle.MutableLiveData
 import com.android.base.foundation.data.Resource
 
 
-fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setLoading() {
-    value = Resource.loading()
+fun <L : Any?, D : Any?, E : Any?> MutableLiveData<Resource<L, D, E>>.setLoading(step: L? = null) {
+    value = Resource.loading(step)
 }
 
-fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setError(error: Throwable, reason: E? = null) {
+fun <L : Any?, D : Any?, E : Any?> MutableLiveData<Resource<L, D, E>>.setError(error: Throwable, reason: E? = null) {
     value = Resource.error(error, reason)
 }
 
-fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setData(data: D?) {
+fun <L : Any?, D : Any?, E : Any?> MutableLiveData<Resource<L, D, E>>.setData(data: D?) {
     value = if (data == null) {
         Resource.noData()
     } else {
@@ -21,19 +21,19 @@ fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setData(data: D?) {
     }
 }
 
-fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setSuccess() {
+fun <L : Any?, D : Any?, E : Any?> MutableLiveData<Resource<L, D, E>>.setSuccess() {
     value = Resource.noData()
 }
 
-fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.postLoading() {
-    postValue(Resource.loading())
+fun <L : Any?, D : Any?, E : Any?> MutableLiveData<Resource<L, D, E>>.postLoading(step: L? = null) {
+    postValue(Resource.loading(step))
 }
 
-fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.postError(error: Throwable, reason: E? = null) {
+fun <L : Any?, D : Any?, E : Any?> MutableLiveData<Resource<L, D, E>>.postError(error: Throwable, reason: E? = null) {
     postValue(Resource.error(error, reason))
 }
 
-fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.postData(data: D?) {
+fun <L : Any?, D : Any?, E : Any?> MutableLiveData<Resource<L, D, E>>.postData(data: D?) {
     postValue(
         if (data == null) {
             Resource.noData()
@@ -43,19 +43,19 @@ fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.postData(data: D?) {
     )
 }
 
-fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.postSuccess() {
+fun <L : Any?, D : Any?, E : Any?> MutableLiveData<Resource<L, D, E>>.postSuccess() {
     postValue(Resource.noData())
 }
 
-fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setLoadingSafely() {
+fun <L : Any?, D : Any?, E : Any?> MutableLiveData<Resource<L, D, E>>.setLoadingSafely(step: L? = null) {
     if (isMainThread()) {
-        value = Resource.loading()
+        value = Resource.loading(step)
     } else {
-        postValue(Resource.loading())
+        postValue(Resource.loading(step))
     }
 }
 
-fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setErrorSafely(error: Throwable, reason: E? = null) {
+fun <L : Any?, D : Any?, E : Any?> MutableLiveData<Resource<L, D, E>>.setErrorSafely(error: Throwable, reason: E? = null) {
     if (isMainThread()) {
         value = Resource.error(error, reason)
     } else {
@@ -63,8 +63,8 @@ fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setErrorSafely(error: T
     }
 }
 
-fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setDataSafely(data: D?) {
-    val resource: Resource<D, E> = if (data == null) {
+fun <L : Any?, D : Any?, E : Any?> MutableLiveData<Resource<L, D, E>>.setDataSafely(data: D?) {
+    val resource: Resource<L, D, E> = if (data == null) {
         Resource.noData()
     } else {
         Resource.success(data)
@@ -77,8 +77,8 @@ fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setDataSafely(data: D?)
     }
 }
 
-fun <D : Any?, E : Any?> MutableLiveData<Resource<D, E>>.setSuccessSafely() {
-    val resource: Resource<D, E> = Resource.noData()
+fun <L : Any?, D : Any?, E : Any?> MutableLiveData<Resource<L, D, E>>.setSuccessSafely() {
+    val resource: Resource<L, D, E> = Resource.noData()
     if (isMainThread()) {
         value = resource
     } else {
