@@ -1,40 +1,56 @@
-package com.android.base.architecture.fragment.list2
+package com.android.base.architecture.fragment.epoxy
 
 import android.view.View
-import com.android.base.adapter.DataManager
+import androidx.recyclerview.widget.RecyclerView
 import com.android.base.architecture.ui.list.*
 import com.android.base.architecture.ui.state.OnRetryActionListener
 import com.android.base.architecture.ui.state.StateLayout
 import com.android.base.architecture.ui.state.StateLayoutConfig
+import com.ztiany.loadmore.adapter.LoadMoreController
+import com.ztiany.loadmore.adapter.OnLoadMoreListener
 
-class ListLayoutHostConfig2 {
+class EpoxyListLayoutHostConfig {
+    var enableLoadMore: Boolean = false
+    var triggerLoadMoreByScroll: Boolean = false
     var onRetry: ((state: Int) -> Unit)? = null
     var onRefresh: (() -> Unit)? = null
     var onLoadMore: (() -> Unit)? = null
 }
 
 /** It is useful when there is more than one list layout in a fragment. */
-fun <T> buildListLayoutHost2(
-    dataManager: DataManager<T>,
+fun <T, A> buildEpoxyListLayoutHost(
+    listDataOperator: A,
+    recyclerView: RecyclerView,
     stateLayout: View,
-    refreshLoadMoreView: View,
-    config: ListLayoutHostConfig2.() -> Unit
-): ListLayoutHost<T> {
+    refreshLayout: View? = null,
+    config: EpoxyListLayoutHostConfig.() -> Unit
+): ListLayoutHost<T> where A : ListDataOperator<T>, A : ListEpoxyControllerInterface, A : PagerSize {
 
     val stateLayoutImpl = (stateLayout as? StateLayout) ?: throw IllegalStateException("Make sure that stateLayout implements StateLayout.")
-    val refreshLoadMoreViewImpl = RefreshLoadMoreViewFactory.createRefreshLoadMoreView(refreshLoadMoreView)
 
-    val hostConfig = ListLayoutHostConfig2().apply(config)
+    val refreshLayoutImpl = if (refreshLayout != null) {
+        RefreshViewFactory.createRefreshView(refreshLayout)
+    } else {
+        null
+    }
 
-    refreshLoadMoreViewImpl.setRefreshHandler(object : RefreshLoadMoreView.RefreshHandler {
+    val hostConfig = EpoxyListLayoutHostConfig().apply(config)
+
+    val loadMoreController: LoadMoreController? = if (hostConfig.enableLoadMore) {
+        listDataOperator.setUpLoadMore(recyclerView, hostConfig.triggerLoadMoreByScroll)
+    } else {
+        null
+    }
+
+    refreshLayoutImpl?.setRefreshHandler(object : RefreshView.RefreshHandler() {
         override fun onRefresh() {
             hostConfig.onRefresh?.invoke()
         }
-    })
 
-    refreshLoadMoreViewImpl.setLoadMoreHandler(object : RefreshLoadMoreView.LoadMoreHandler {
-        override fun onLoadMore() {
-            hostConfig.onLoadMore?.invoke()
+        override fun canRefresh(): Boolean {
+            return if (loadMoreController != null) {
+                !loadMoreController.isLoadingMore
+            } else true
         }
     })
 
@@ -44,62 +60,78 @@ fun <T> buildListLayoutHost2(
         }
     })
 
+    var enableLoadMore = loadMoreController != null
+
+    loadMoreController?.setOnLoadMoreListener(object : OnLoadMoreListener {
+        override fun onLoadMore() {
+            hostConfig.onLoadMore?.invoke()
+        }
+
+        override fun canLoadMore() = if (refreshLayoutImpl != null) {
+            !refreshLayoutImpl.isRefreshing && enableLoadMore
+        } else {
+            enableLoadMore
+        }
+    })
+
     return object : ListLayoutHost<T> {
 
+        val pager = AutoPaging(this, object : PagerSize {
+            override fun getDataSize(): Int {
+                return listDataOperator.getDataSize()
+            }
+        })
+
         override fun replaceData(data: List<T>) {
-            dataManager.replaceAll(data)
+            listDataOperator.replaceData(data)
         }
 
         override fun addData(data: List<T>) {
-            dataManager.addItems(data)
+            listDataOperator.addData(data)
         }
 
         override fun loadMoreCompleted(hasMore: Boolean) {
-            refreshLoadMoreViewImpl.loadMoreCompleted(hasMore)
+            loadMoreController?.loadCompleted(hasMore)
         }
 
         override fun loadMoreFailed() {
-            refreshLoadMoreViewImpl.loadMoreFailed()
+            loadMoreController?.loadFail()
         }
 
         override fun getPager(): Paging {
-            return AutoPaging(this, object : PagerSize {
-                override fun getDataSize(): Int {
-                    return dataManager.getDataSize()
-                }
-            })
+            return pager
         }
 
         override fun isEmpty(): Boolean {
-            return dataManager.isEmpty()
+            return listDataOperator.isEmpty()
         }
 
         override fun isLoadingMore(): Boolean {
-            return refreshLoadMoreViewImpl.isLoadingMore()
+            return loadMoreController?.isLoadingMore ?: false
         }
 
         override var isLoadMoreEnable: Boolean
-            get() = refreshLoadMoreViewImpl.isLoadMoreEnable
+            get() = loadMoreController != null && enableLoadMore
             set(value) {
-                refreshLoadMoreViewImpl.isLoadMoreEnable = value
+                enableLoadMore = value
             }
 
         override fun autoRefresh() {
-            refreshLoadMoreViewImpl.autoRefresh()
+            refreshLayoutImpl?.autoRefresh()
         }
 
         override fun refreshCompleted() {
-            refreshLoadMoreViewImpl.refreshCompleted()
+            refreshLayoutImpl?.refreshCompleted()
         }
 
         override fun isRefreshing(): Boolean {
-            return refreshLoadMoreViewImpl.isRefreshing()
+            return refreshLayoutImpl?.isRefreshing ?: false
         }
 
         override var isRefreshEnable: Boolean
-            get() = refreshLoadMoreViewImpl.isRefreshEnable
+            get() = refreshLayoutImpl?.isRefreshEnable ?: false
             set(value) {
-                refreshLoadMoreViewImpl.isRefreshEnable = value
+                refreshLayoutImpl?.isRefreshEnable = value
             }
 
         override fun showContentLayout() {
@@ -142,6 +174,6 @@ fun <T> buildListLayoutHost2(
             return stateLayoutImpl.currentStatus()
         }
 
-    }
+    }//object end.
 
 }

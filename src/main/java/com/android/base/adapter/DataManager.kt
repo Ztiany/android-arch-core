@@ -12,7 +12,7 @@ interface DataManager<T> {
     fun addItems(elements: List<T>)
 
     /**
-     * 添加元素前会使用equals方法进行比较。
+     * 添加元素前会使用 equals 方法进行比较。
      *
      * @param elements 元素
      */
@@ -25,7 +25,7 @@ interface DataManager<T> {
     fun replaceAt(index: Int, element: T)
 
     /**
-     * 清除之前集合中的数据，然后把elements添加到之前的集合中，不会使用elements作为数据源
+     * 清除之前集合中的数据，然后把 elements 添加到之前的集合中，不会使用 elements 作为数据源。
      *
      * @param elements 元素
      */
@@ -57,8 +57,7 @@ interface DataManager<T> {
     fun clear()
 
     /**
-     * @param element element
-     * @return -1 if not contains this element
+     * @return -1 if not contains this element.
      */
     fun indexItem(element: T): Int
 

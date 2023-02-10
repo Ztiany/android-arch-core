@@ -72,10 +72,13 @@ dependencies {
     api KotlinLibraries.kotlinAndroidCoroutines
 
     //Adapter
-    api UILibraries.epoxy
     api UILibraries.multiType
     api ThirdLibraries.loadMoreAdapter
 
     //Log
     api ThirdLibraries.timber
+
+    //epoxy
+    api UILibraries.epoxy
+    kapt UILibraries.epoxyApt
 }

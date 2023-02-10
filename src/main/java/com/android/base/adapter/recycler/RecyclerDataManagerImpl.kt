@@ -35,14 +35,7 @@ internal class RecyclerDataManagerImpl<T>(
         if (elements.isEmpty()) {
             return
         }
-        var hasRemovedElements = false
-        for (element in elements) {
-            if (internalList.remove(element)) {
-                if (!hasRemovedElements) {
-                    hasRemovedElements = true
-                }
-            }
-        }
+        val hasRemovedElements = internalList.removeAll(elements)
         if (hasRemovedElements) {
             internalList.addAll(elements)
             notifyDataSetChanged()

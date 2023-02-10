@@ -2,28 +2,25 @@ package com.android.base.architecture.ui.list;
 
 import static com.android.base.architecture.ui.list.ListLayoutHostKt.isLoadingFirstPage;
 
-import com.android.base.adapter.DataManager;
-
 /**
  * @author Ztiany
  */
 public class AutoPaging extends Paging {
 
-    @SuppressWarnings("rawtypes")
-    private final DataManager mDataManager;
+    private final PagerSize mPagerSize;
 
     @SuppressWarnings("rawtypes")
     private final ListLayoutHost mRefreshListLayoutHost;
 
     @SuppressWarnings("rawtypes")
-    public AutoPaging(ListLayoutHost refreshListLayoutHost, DataManager dataManager) {
+    public AutoPaging(ListLayoutHost refreshListLayoutHost, PagerSize pagerSize) {
         mRefreshListLayoutHost = refreshListLayoutHost;
-        mDataManager = dataManager;
+        mPagerSize = pagerSize;
     }
 
     @Override
     public int getCurrentPage() {
-        return calcPageNumber(mDataManager.getDataSize());
+        return calcPageNumber(mPagerSize.getDataSize());
     }
 
     @Override
@@ -37,7 +34,7 @@ public class AutoPaging extends Paging {
 
     @Override
     public int getItemCount() {
-        return mDataManager.getDataSize();
+        return mPagerSize.getDataSize();
     }
 
 }

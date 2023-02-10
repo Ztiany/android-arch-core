@@ -4,7 +4,7 @@ import android.app.Dialog
 import androidx.annotation.StringRes
 
 /**
- * 显示通用的 LoadingDialog 和 Message。
+ * 显示通用的 LoadingDialog 和 Message 展示。
  *
  * @author Ztiany
  */

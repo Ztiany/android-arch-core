@@ -7,7 +7,6 @@ import com.android.base.architecture.ui.list.*
 import com.android.base.architecture.ui.state.OnRetryActionListener
 import com.android.base.architecture.ui.state.StateLayout
 import com.android.base.architecture.ui.state.StateLayoutConfig
-import com.ztiany.loadmore.adapter.Direction
 import com.ztiany.loadmore.adapter.LoadMoreAdapter
 import com.ztiany.loadmore.adapter.LoadMoreController
 import com.ztiany.loadmore.adapter.OnLoadMoreListener
@@ -15,7 +14,6 @@ import com.ztiany.loadmore.adapter.OnLoadMoreListener
 class ListLayoutHostConfig {
     var enableLoadMore: Boolean = false
     var triggerLoadMoreByScroll: Boolean = false
-    @Direction var scrollDirection: Int = Direction.UP
     var onRetry: ((state: Int) -> Unit)? = null
     var onLoadMoreCreated: ((LoadMoreAdapter) -> Unit)? = null
     var onRefresh: (() -> Unit)? = null
@@ -42,7 +40,6 @@ fun <T, A> buildListLayoutHost(
 
     val loadMoreController: LoadMoreController? = if (hostConfig.enableLoadMore) {
         LoadMoreAdapter.wrap(dataManager, hostConfig.triggerLoadMoreByScroll).also {
-            it.setLoadMoreDirection(hostConfig.scrollDirection)
             hostConfig.onLoadMoreCreated?.invoke(it)
         }
     } else {
@@ -83,7 +80,11 @@ fun <T, A> buildListLayoutHost(
 
     return object : ListLayoutHost<T> {
 
-        val pager = AutoPaging(this, dataManager)
+        val pager = AutoPaging(this, object : PagerSize {
+            override fun getDataSize(): Int {
+                return dataManager.getDataSize()
+            }
+        })
 
         override fun replaceData(data: List<T>) {
             dataManager.replaceAll(data)

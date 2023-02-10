@@ -5,7 +5,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 /**
- * RefreshLoadMoreView Factory
+ * RefreshLoadMoreView Factory.
  *
  * @author Ztiany
  */

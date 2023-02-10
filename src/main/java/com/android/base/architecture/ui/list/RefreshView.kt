@@ -1,7 +1,7 @@
 package com.android.base.architecture.ui.list
 
 /**
- *对下拉刷新的抽象
+ *对下拉刷新的抽象。
  *
  * @author Ztiany
  */
