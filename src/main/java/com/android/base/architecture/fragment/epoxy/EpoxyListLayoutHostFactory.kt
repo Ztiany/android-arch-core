@@ -12,6 +12,7 @@ import com.ztiany.loadmore.adapter.OnLoadMoreListener
 class EpoxyListLayoutHostConfig {
     var enableLoadMore: Boolean = false
     var triggerLoadMoreByScroll: Boolean = false
+    var onLoadMoreCreated: ((LoadMoreController) -> Unit)? = null
     var onRetry: ((state: Int) -> Unit)? = null
     var onRefresh: (() -> Unit)? = null
     var onLoadMore: (() -> Unit)? = null
@@ -37,7 +38,9 @@ fun <T, A> buildEpoxyListLayoutHost(
     val hostConfig = EpoxyListLayoutHostConfig().apply(config)
 
     val loadMoreController: LoadMoreController? = if (hostConfig.enableLoadMore) {
-        listDataOperator.setUpLoadMore(recyclerView, hostConfig.triggerLoadMoreByScroll)
+        listDataOperator.setUpLoadMore(recyclerView, hostConfig.triggerLoadMoreByScroll).also {
+            hostConfig.onLoadMoreCreated?.invoke(it)
+        }
     } else {
         null
     }

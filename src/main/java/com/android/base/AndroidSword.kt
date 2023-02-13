@@ -5,6 +5,8 @@ import android.content.res.Configuration
 import com.android.base.architecture.app.ApplicationDelegate
 import com.android.base.architecture.app.BaseAppContext
 import com.android.base.architecture.fragment.animator.FragmentAnimator
+import com.android.base.architecture.fragment.epoxy.DefaultEpoxyLoadMoreViewFactory
+import com.android.base.architecture.fragment.epoxy.EpoxyLoadMoreViewFactory
 import com.android.base.architecture.fragment.tools.FragmentConfig
 import com.android.base.architecture.ui.list.Paging
 import com.android.base.architecture.ui.list.RefreshLoadMoreViewFactory
@@ -33,6 +35,8 @@ object AndroidSword {
 
     /** 用于创建 LoadingView*/
     var sLoadingViewHostFactory: ((Context) -> LoadingViewHost)? = null
+
+    var epoxyLoadMoreViewFactory: EpoxyLoadMoreViewFactory = DefaultEpoxyLoadMoreViewFactory()
 
     /** [Throwable] 到可读的 [CharSequence] 转换*/
     var errorConvert: ErrorConvert = object : ErrorConvert {

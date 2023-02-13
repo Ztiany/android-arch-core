@@ -35,34 +35,43 @@ internal class DefaultEpoxyLoadMoreViewFactory : EpoxyLoadMoreViewFactory {
         val noMoreMsg = context.getString(R.string.adapter_no_more_message)
         val failMsg = context.getString(R.string.adapter_load_more_fail)
         val clickLoadMsg = context.getString(R.string.adapter_click_load_more)
-        val loadCompletedMsg = context.getString(R.string.adapter_load_completed)
+        //val loadCompletedMsg = context.getString(R.string.adapter_load_completed)
 
         return object : EpoxyLoadMoreView {
 
+            override var autoHideWhenNoMore = false
+
             override fun onLoading() {
+                container.visibility = View.VISIBLE
+                msgTv.visibility = View.INVISIBLE
                 progressBar.visibility = View.VISIBLE
-                msgTv.visibility = View.GONE
             }
 
-            override fun onFail() {
-                progressBar.visibility = View.GONE
+            override fun onFailed() {
+                container.visibility = View.VISIBLE
                 msgTv.visibility = View.VISIBLE
+                progressBar.visibility = View.GONE
                 msgTv.text = failMsg
             }
 
             override fun onCompleted(hasMore: Boolean) {
                 if (!hasMore) {
+                    if (autoHideWhenNoMore) {
+                        container.visibility = View.INVISIBLE
+                    } else {
+                        container.visibility = View.VISIBLE
+                    }
                     progressBar.visibility = View.GONE
                     msgTv.visibility = View.VISIBLE
                     msgTv.text = noMoreMsg
                 } else {
-                    progressBar.visibility = View.GONE
-                    msgTv.visibility = View.VISIBLE
-                    msgTv.text = loadCompletedMsg
+                    //Epoxy 的刷新是异步的，展示 loading 有延迟，所以直接俄展示 loading，也不会有哈问题。
+                    onLoading()
                 }
             }
 
-            override fun onClickLoad() {
+            override fun showClickToLoadMore() {
+                container.visibility = View.VISIBLE
                 progressBar.visibility = View.GONE
                 msgTv.visibility = View.VISIBLE
                 msgTv.text = clickLoadMsg

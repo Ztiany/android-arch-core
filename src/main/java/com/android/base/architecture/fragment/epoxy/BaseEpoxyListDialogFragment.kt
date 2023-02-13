@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
-import com.android.base.architecture.fragment.base.BaseUIFragment
+import com.android.base.architecture.fragment.base.BaseUIDialogFragment
 import com.android.base.architecture.ui.CommonId
 import com.android.base.architecture.ui.list.ListDataOperator
 import com.android.base.architecture.ui.list.ListLayoutHost
@@ -16,7 +16,7 @@ import com.ztiany.loadmore.adapter.LoadMoreController
 import kotlin.properties.Delegates
 
 /** This ListFragment works with epoxy. Only use [submitListResult] to handle received list data. */
-abstract class BaseEpoxyListFragment<T, VB : ViewBinding> : BaseUIFragment<VB>(), ListLayoutHost<T> {
+abstract class BaseEpoxyListDialogFragment<T, VB : ViewBinding> : BaseUIDialogFragment<VB>(), ListLayoutHost<T> {
 
     private var loadMoreImpl: LoadMoreController? = null
 
@@ -59,13 +59,13 @@ abstract class BaseEpoxyListFragment<T, VB : ViewBinding> : BaseUIFragment<VB>()
             }
 
             this.onRetry = {
-                this@BaseEpoxyListFragment.onRetry(it)
+                this@BaseEpoxyListDialogFragment.onRetry(it)
             }
             this.onRefresh = {
-                this@BaseEpoxyListFragment.onRefresh()
+                this@BaseEpoxyListDialogFragment.onRefresh()
             }
             this.onLoadMore = {
-                this@BaseEpoxyListFragment.onLoadMore()
+                this@BaseEpoxyListDialogFragment.onLoadMore()
             }
         }
     }
