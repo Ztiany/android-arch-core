@@ -3,7 +3,6 @@ package com.android.base.architecture.app
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
@@ -12,14 +11,13 @@ import com.android.base.CrashProcessor
 import timber.log.Timber
 import java.io.File
 import java.io.PrintStream
-import java.lang.Character.isSpace
 import java.lang.Thread.UncaughtExceptionHandler
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * 全局异常处理
+ * 全局异常处理。
  */
 internal class CrashHandler private constructor(
     private val context: Context

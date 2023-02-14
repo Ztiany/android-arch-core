@@ -29,4 +29,8 @@ public class RefreshLoadMoreViewFactory {
         RefreshLoadMoreView createRefreshView(View view);
     }
 
+    public static Factory getFactory() {
+        return sFactory;
+    }
+
 }

@@ -26,10 +26,10 @@ abstract class LoadMoreControllerImpl implements LoadMoreController {
 
     private final boolean timeLimited;
     private final OnRecyclerViewScrollBottomListener mOnRecyclerViewScrollBottomListener;
-    private boolean mAutoHideWhenNoMore = false;
+    private boolean mAutoHideWhenNoMore = LoadMoreConfig.isStopAutoLoadWhenFailed();
 
     @LoadMode
-    private int mLoadMode = LoadMode.AUTO_LOAD;
+    private int mLoadMode = LoadMoreConfig.getLoadMode();
 
     @Direction
     private int mDirection = Direction.UP;

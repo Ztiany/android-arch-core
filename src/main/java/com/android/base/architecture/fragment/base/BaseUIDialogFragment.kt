@@ -92,7 +92,7 @@ abstract class BaseUIDialogFragment<VB : ViewBinding> : BaseDialogFragment(), Lo
         return if (loadingViewImpl != null) {
             loadingViewImpl
         } else {
-            loadingViewHost = onCreateLoadingView() ?: AndroidSword.sLoadingViewHostFactory?.invoke(requireContext())
+            loadingViewHost = onCreateLoadingView() ?: AndroidSword.loadingViewHostFactory?.invoke(requireContext())
             loadingViewHost ?: throw NullPointerException("you need to config LoadingViewFactory in Sword or implement onCreateLoadingView.")
         }
     }

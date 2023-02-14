@@ -384,7 +384,7 @@ class EnhanceFragmentTransaction constructor(
 
     /**
      * 把指定 [fragment] 添加到回退栈中，并 hide 其他的 fragment，
-     * 如果 [containerId]==0，则使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id 作为容器 id，
+     * 如果 [containerId]==0，则使用 [com.android.base.AndroidSword.defaultFragmentContainerId] 中配置的 id 作为容器 id，
      * 如果 [tag] == null 则使用指定 [fragment] 对应 class 的全限定类名。
      */
     fun addToStack(
@@ -408,7 +408,7 @@ class EnhanceFragmentTransaction constructor(
 
     /**
      * 以 replace 方式把指定 [fragment] 添加到回退栈中，
-     * 如果 [containerId]==0，则使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id 作为容器 id，
+     * 如果 [containerId]==0，则使用 [com.android.base.AndroidSword.defaultFragmentContainerId] 中配置的 id 作为容器 id，
      * 如果 [tag] == null 则使用指定 [fragment] 对应 class 的全限定类名。
      * 此方法可能导致 Fragment 转场动画错乱。
      */
@@ -438,7 +438,7 @@ class EnhanceFragmentTransaction constructor(
     }
 
     /**
-     * 添加指定的 [fragment]，默认使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id 作为容器 id，如果 [tag] 为 null，则使用指定 [fragment] 的全限定类名。
+     * 添加指定的 [fragment]，默认使用 [com.android.base.AndroidSword.defaultFragmentContainerId] 中配置的 id 作为容器 id，如果 [tag] 为 null，则使用指定 [fragment] 的全限定类名。
      */
     fun addFragment(
         fragment: Fragment,
@@ -448,7 +448,7 @@ class EnhanceFragmentTransaction constructor(
     }
 
     /**
-     * 替换为指定的 [fragment]，id 使用 [com.android.base.AndroidSword.setDefaultFragmentContainerId] 中配置的 id 作为容器 id，如果 [tag] 为 null，则使用指定 [fragment] 的全限定类名。
+     * 替换为指定的 [fragment]，id 使用 [com.android.base.AndroidSword.defaultFragmentContainerId] 中配置的 id 作为容器 id，如果 [tag] 为 null，则使用指定 [fragment] 的全限定类名。
      */
     fun replaceFragment(
         fragment: Fragment,

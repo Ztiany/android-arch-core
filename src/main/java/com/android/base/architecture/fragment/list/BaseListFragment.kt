@@ -5,6 +5,7 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.viewbinding.ViewBinding
+import com.android.base.AndroidSword
 import com.android.base.adapter.DataManager
 import com.android.base.architecture.fragment.base.BaseUIFragment
 import com.android.base.architecture.ui.CommonId
@@ -42,7 +43,7 @@ abstract class BaseListFragment<T, VB : ViewBinding> : BaseUIFragment<VB>(), Lis
         dataManager: A,
         recyclerView: RecyclerView,
         enableLoadMore: Boolean = false,
-        triggerLoadMoreByScroll: Boolean = false
+        triggerLoadMoreByScroll: Boolean = AndroidSword.loadMoreTriggerByScroll
     ): ListLayoutHost<T> where A : DataManager<T>, A : Adapter<*> {
 
         if (!enableLoadMore) {

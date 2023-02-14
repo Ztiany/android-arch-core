@@ -20,11 +20,11 @@ internal class ApplicationDelegate {
     private val onAttachBaseCalled = AtomicBoolean(false)
 
     fun attachBaseContext(@Suppress("UNUSED_PARAMETER") base: Context) {
-        check(onAttachBaseCalled.compareAndSet(false, true)) { "Can only be called once" }
+        check(onAttachBaseCalled.compareAndSet(false, true)) { "Can only be called once." }
     }
 
     fun onCreate(application: Application) {
-        check(onCreateCalled.compareAndSet(false, true)) { "Can only be called once" }
+        check(onCreateCalled.compareAndSet(false, true)) { "Can only be called once." }
         this.application = application
         //异常日志记录
         crashHandler = CrashHandler.register(application)

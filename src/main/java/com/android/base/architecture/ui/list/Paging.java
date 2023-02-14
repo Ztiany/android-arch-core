@@ -84,6 +84,14 @@ public abstract class Paging {
         PAGE_SIZE = pageSize;
     }
 
+    public static int getDefaultPageStart() {
+        return PAGE_START;
+    }
+
+    public static int getDefaultPageSize() {
+        return PAGE_SIZE;
+    }
+
     public abstract int getCurrentPage();
 
     @SuppressWarnings("unused")

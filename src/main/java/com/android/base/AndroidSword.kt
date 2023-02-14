@@ -13,6 +13,8 @@ import com.android.base.architecture.ui.list.RefreshLoadMoreViewFactory
 import com.android.base.architecture.ui.list.RefreshLoadMoreViewFactory.Factory
 import com.android.base.architecture.ui.list.RefreshViewFactory
 import com.android.base.architecture.ui.loading.LoadingViewHost
+import com.ztiany.loadmore.adapter.LoadMode
+import com.ztiany.loadmore.adapter.LoadMoreConfig
 
 /**
  * A set of useful tools for android development, just like a sword.
@@ -27,60 +29,92 @@ object AndroidSword {
     ///////////////////////////////////////////////////////////////////////////
     // configuration
     ///////////////////////////////////////////////////////////////////////////
-    /** 错误类型分类器 */
+
+    /** 配置异常处理器。 */
+    fun crashProcessor(crashProcessor: CrashProcessor) {
+        coreAppDelegate.setCrashProcessor(crashProcessor)
+    }
+
+    /** 列表分页起始页。 */
+    var defaultPageStart: Int
+        set(value) {
+            Paging.setDefaultPageStart(value)
+        }
+        get() {
+            return Paging.getDefaultPageStart()
+        }
+
+    /** 列表分页大小。 */
+    var defaultPageSize: Int
+        set(value) {
+            Paging.setDefaultPageSize(value)
+        }
+        get() {
+            return Paging.getDefaultPageSize()
+        }
+
+    /** 错误类型分类器。 */
     var errorClassifier: ErrorClassifier? = null
 
-    /** dialog 最小展示时间【单位：毫秒】  */
-    var minimalDialogDisplayTime: Long = 0
+    /** dialog 最小展示时间。【单位：毫秒】  */
+    var minimalDialogDisplayTime: Long = 500
 
-    /** 用于创建 LoadingView*/
-    var sLoadingViewHostFactory: ((Context) -> LoadingViewHost)? = null
+    /** 用于创建 LoadingView。【必须配置】 */
+    var loadingViewHostFactory: ((Context) -> LoadingViewHost)? = null
 
+    /** 用于配置使用 epoxy 时，LoadMore Item 的视图 。 */
     var epoxyLoadMoreViewFactory: EpoxyLoadMoreViewFactory = DefaultEpoxyLoadMoreViewFactory()
 
-    /** [Throwable] 到可读的 [CharSequence] 转换*/
+    /** [Throwable] 到可读的 [CharSequence] 转换。 */
     var errorConvert: ErrorConvert = object : ErrorConvert {
         override fun convert(throwable: Throwable): CharSequence {
             return throwable.message.toString()
         }
     }
 
-    fun setCrashProcessor(crashProcessor: CrashProcessor): AndroidSword {
-        coreAppDelegate.setCrashProcessor(crashProcessor)
-        return this
-    }
+    /** 设置一个默认的布局 id，在使用 Fragments 中相关方法时，如果没有传入特定的容器 id  时，则使用设置的默认布局 id。【必须配置】  */
+    var defaultFragmentContainerId: Int
+        set(value) {
+            FragmentConfig.setDefaultContainerId(value)
+        }
+        get() {
+            return FragmentConfig.defaultContainerId()
+        }
 
-    fun setDefaultPageStart(pageStart: Int): AndroidSword {
-        Paging.setDefaultPageStart(pageStart)
-        return this
-    }
+    /**设置默认的 Fragment 转场动画 */
+    var defaultFragmentAnimator: FragmentAnimator
+        set(value) {
+            FragmentConfig.setDefaultFragmentAnimator(value)
+        }
+        get() {
+            return FragmentConfig.defaultFragmentAnimator()
+        }
 
-    fun setDefaultPageSize(defaultPageSize: Int): AndroidSword {
-        Paging.setDefaultPageSize(defaultPageSize)
-        return this
-    }
+    var refreshViewFactory: RefreshViewFactory.Factory?
+        set(value) {
+            RefreshViewFactory.registerFactory(value)
+        }
+        get() {
+            return RefreshViewFactory.getFactory()
+        }
 
-    /** 设置一个默认的布局 id，在使用 Fragments 中相关方法时，如果没有传入特定的容器 id  时，则使用设置的默认布局 id。  */
-    fun setDefaultFragmentContainerId(defaultContainerId: Int): AndroidSword {
-        FragmentConfig.setDefaultContainerId(defaultContainerId)
-        return this
-    }
+    var refreshLoadViewFactory: Factory?
+        set(value) {
+            RefreshLoadMoreViewFactory.registerFactory(value)
+        }
+        get() {
+            return RefreshLoadMoreViewFactory.getFactory()
+        }
 
-    /**设置默认的 Fragment 转场动画*/
-    fun setDefaultFragmentAnimator(animator: FragmentAnimator?): AndroidSword {
-        FragmentConfig.setDefaultFragmentAnimator(animator)
-        return this
-    }
+    /** 加载更多触发的方式，默认为 LoadMore Item 被 bind 时。*/
+    var loadMoreTriggerByScroll: Boolean = false
 
-    fun registerRefreshLoadViewFactory(factory: Factory): AndroidSword {
-        RefreshLoadMoreViewFactory.registerFactory(factory)
-        return this
-    }
-
-    fun registerRefreshViewFactory(factory: RefreshViewFactory.Factory): AndroidSword {
-        RefreshViewFactory.registerFactory(factory)
-        return this
-    }
+    /** 加载更多的方式，默认为滑动到底部时自动加载更多。*/
+    @LoadMode var loadMoreMode: Int
+        get() = LoadMoreConfig.getLoadMode()
+        set(value) {
+            LoadMoreConfig.setLoadMode(value)
+        }
 
     ///////////////////////////////////////////////////////////////////////////
     // lifecycle of application

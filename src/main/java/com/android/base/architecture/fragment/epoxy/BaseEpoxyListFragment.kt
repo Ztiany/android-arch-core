@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
+import com.android.base.AndroidSword
 import com.android.base.architecture.fragment.base.BaseUIFragment
 import com.android.base.architecture.ui.CommonId
 import com.android.base.architecture.ui.list.ListDataOperator
@@ -41,7 +42,7 @@ abstract class BaseEpoxyListFragment<T, VB : ViewBinding> : BaseUIFragment<VB>()
         listDataOperator: A,
         recyclerView: RecyclerView,
         enableLoadMore: Boolean = false,
-        triggerLoadMoreByScroll: Boolean = false
+        triggerLoadMoreByScroll: Boolean =  AndroidSword.loadMoreTriggerByScroll
     ): ListLayoutHost<T> where A : ListDataOperator<T>, A : ListEpoxyControllerInterface, A : PagerSize {
 
         return buildEpoxyListLayoutHost(

@@ -31,4 +31,8 @@ public class RefreshViewFactory {
         RefreshView createRefreshView(View view);
     }
 
+    public static Factory getFactory() {
+        return sFactory;
+    }
+
 }

@@ -14,8 +14,7 @@ import kotlin.properties.Delegates
 
 /**
  *  [BaseListFragment] 只能支持 RecyclerView。因为 [BaseListFragment] 采用包装 [androidx.recyclerview.widget.RecyclerView.Adapter] 的方式，在底
- *  部添加 load more view 的 item，来实现加载更多。[BaseList2Fragment] 没有采用此种方式，所以你使用的 RefreshView 应该是支持下来刷新和加载更多功能的。
- *  使用前需要先调用 [setUpList] 。
+ *  部添加 load more item 来实现加载更多。[BaseList2Fragment] 没有采用此种方式，所以你使用的 RefreshView 应该是支持下来刷新和加载更多功能的。
  *
  *@author Ztiany
  */
