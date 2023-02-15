@@ -44,7 +44,6 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         }
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun notifyElementChanged(element: T) {
         val position = indexItem(element)
         if (position != -1) {
@@ -52,14 +51,12 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         }
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun add(element: T) {
         val newList = copyCurrent()
         newList.add(element)
         asyncListDiffer.submitList(newList)
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun addAt(location: Int, element: T) {
         var position = location
         if (position > getDataSize()) {
@@ -70,7 +67,6 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         asyncListDiffer.submitList(newList)
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun addItems(elements: List<T>) {
         if (elements.isEmpty()) {
             return
@@ -80,7 +76,6 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         asyncListDiffer.submitList(newList)
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun addItemsChecked(elements: List<T>) {
         if (elements.isEmpty()) {
             return
@@ -96,7 +91,6 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         asyncListDiffer.submitList(newList)
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun addItemsAt(location: Int, elements: List<T>) {
         var realLocation = location
         if (elements.isEmpty()) {
@@ -110,7 +104,6 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         asyncListDiffer.submitList(newList)
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun replace(oldElement: T, newElement: T) {
         if (!contains(oldElement)) {
             return
@@ -120,7 +113,6 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         asyncListDiffer.submitList(newList)
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun replaceAt(index: Int, element: T) {
         if (getDataSize() > index) {
             val newList = copyCurrent()
@@ -129,7 +121,6 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         }
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun remove(element: T): Boolean {
         if (contains(element)) {
             val newList = copyCurrent()
@@ -140,7 +131,6 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         return false
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun removeItems(elements: List<T>) {
         if (elements.isEmpty() || isEmpty() || !getList().containsAll(elements)) {
             return
@@ -150,12 +140,10 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         asyncListDiffer.submitList(newList)
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun removeItems(elements: List<T>, isSuccessive: Boolean) {
         removeItems(elements)
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun removeAt(index: Int) {
         if (getDataSize() > index) {
             val newList = copyCurrent()
@@ -164,19 +152,16 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         }
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun clear() {
         asyncListDiffer.submitList(null)
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun removeIf(filter: (T) -> Boolean) {
         val newList = copyCurrent()
         newList.removeAll(filter)
         asyncListDiffer.submitList(newList)
     }
 
-    @Deprecated(message = "推荐统一使用 submitList 的方式来提交修改。")
     override fun swipePosition(fromPosition: Int, toPosition: Int) {
         val intRange = getList().indices
         if (fromPosition != toPosition && fromPosition in intRange && toPosition in intRange) {
@@ -225,13 +210,12 @@ abstract class DiffRecyclerAdapter<T, VH : RecyclerView.ViewHolder> @JvmOverload
         asyncListDiffer.submitList(newList)
     }
 
-    /** the same as [submitList]. */
     override fun setDataSource(newDataSource: MutableList<T>) {
-        submitList(newDataSource)
+        asyncListDiffer.submitList(newDataSource)
     }
 
-    fun submitList(list: List<T>) {
-        asyncListDiffer.submitList(list)
-    }
+}
 
+fun <T, VH : RecyclerView.ViewHolder> DiffRecyclerAdapter<T, VH>.submitList(list: List<T>) {
+    setDataSource(list.toMutableList())
 }

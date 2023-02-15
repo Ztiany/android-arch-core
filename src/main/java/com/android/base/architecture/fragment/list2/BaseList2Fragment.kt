@@ -3,10 +3,10 @@ package com.android.base.architecture.fragment.list2
 import android.os.Bundle
 import android.view.View
 import androidx.viewbinding.ViewBinding
-import com.android.base.adapter.DataManager
 import com.android.base.architecture.fragment.base.BaseUIFragment
 import com.android.base.architecture.fragment.list.BaseListFragment
 import com.android.base.architecture.ui.CommonId
+import com.android.base.architecture.ui.list.ListDataHost
 import com.android.base.architecture.ui.list.ListLayoutHost
 import com.android.base.architecture.ui.list.Paging
 import com.android.base.architecture.ui.state.StateLayoutConfig
@@ -33,12 +33,11 @@ abstract class BaseList2Fragment<T, VB : ViewBinding> : BaseUIFragment<VB>(), Li
      */
     abstract fun provideListImplementation(view: View, savedInstanceState: Bundle?): ListLayoutHost<T>
 
-    @SuppressWarnings("WeakerAccess")
     protected fun setUpList(
-        dataManager: DataManager<T>
+        listDataHost: ListDataHost<T>
     ): ListLayoutHost<T> {
         return buildListLayoutHost2(
-            dataManager,
+            listDataHost,
             vb.root.findViewById(CommonId.STATE_ID),
             vb.root.findViewById(CommonId.REFRESH_ID)
         ) {
@@ -82,6 +81,10 @@ abstract class BaseList2Fragment<T, VB : ViewBinding> : BaseUIFragment<VB>(), Li
 
     override fun isEmpty(): Boolean {
         return listLayoutHostImpl.isEmpty()
+    }
+
+    override fun getListSize(): Int {
+        return listLayoutHostImpl.getListSize()
     }
 
     override fun isLoadingMore(): Boolean {

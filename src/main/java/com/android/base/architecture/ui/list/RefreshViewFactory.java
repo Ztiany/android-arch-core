@@ -14,13 +14,17 @@ public class RefreshViewFactory {
 
     @NonNull
     public static RefreshView createRefreshView(View view) {
+        RefreshView refreshView = null;
         if (sFactory != null) {
-            return sFactory.createRefreshView(view);
+            refreshView = sFactory.createRefreshView(view);
         }
-        if (view instanceof SwipeRefreshLayout) {
-            return new SwipeRefreshView((SwipeRefreshLayout) view);
+        if (refreshView == null && view instanceof SwipeRefreshLayout) {
+            refreshView = new SwipeRefreshView((SwipeRefreshLayout) view);
         }
-        throw new IllegalArgumentException("RefreshViewFactory does not support create RefreshView . the view ：" + view);
+        if (refreshView == null) {
+            throw new IllegalArgumentException("RefreshViewFactory does not support create RefreshView . the view ：" + view);
+        }
+        return refreshView;
     }
 
     public static void registerFactory(Factory factory) {

@@ -20,7 +20,7 @@ public class AutoPaging extends Paging {
 
     @Override
     public int getCurrentPage() {
-        return calcPageNumber(mPagerSize.getDataSize());
+        return calcPageNumber(mPagerSize.getSize());
     }
 
     @Override
@@ -34,7 +34,7 @@ public class AutoPaging extends Paging {
 
     @Override
     public int getItemCount() {
-        return mPagerSize.getDataSize();
+        return mPagerSize.getSize();
     }
 
 }

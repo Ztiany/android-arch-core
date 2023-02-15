@@ -6,12 +6,13 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.viewbinding.ViewBinding
 import com.android.base.AndroidSword
-import com.android.base.adapter.DataManager
 import com.android.base.architecture.fragment.base.BaseUIFragment
 import com.android.base.architecture.ui.CommonId
+import com.android.base.architecture.ui.list.ListDataHost
 import com.android.base.architecture.ui.list.ListLayoutHost
 import com.android.base.architecture.ui.list.Paging
 import com.android.base.architecture.ui.state.StateLayoutConfig
+import com.ztiany.loadmore.adapter.LoadMoreAdapter
 import com.ztiany.loadmore.adapter.LoadMoreController
 import kotlin.properties.Delegates
 
@@ -38,32 +39,25 @@ abstract class BaseListFragment<T, VB : ViewBinding> : BaseUIFragment<VB>(), Lis
      */
     abstract fun provideListImplementation(view: View, savedInstanceState: Bundle?): ListLayoutHost<T>
 
-    @SuppressWarnings("WeakerAccess")
-    protected fun <A> setUpList(
-        dataManager: A,
-        recyclerView: RecyclerView,
-        enableLoadMore: Boolean = false,
+    /**
+     * Call this method before calling to [setUpList]. And assign [RecyclerView]'s [Adapter] with the return value.
+     */
+    protected fun enableLoadMore(
+        adapter: Adapter<*>,
         triggerLoadMoreByScroll: Boolean = AndroidSword.loadMoreTriggerByScroll
-    ): ListLayoutHost<T> where A : DataManager<T>, A : Adapter<*> {
-
-        if (!enableLoadMore) {
-            recyclerView.adapter = dataManager
+    ): Adapter<*> {
+        return LoadMoreAdapter.wrap(adapter, triggerLoadMoreByScroll).apply {
+            loadMoreImpl = this
         }
+    }
 
+    protected fun setUpList(listDataHost: ListDataHost<T>): ListLayoutHost<T> {
         return buildListLayoutHost(
-            dataManager,
+            listDataHost,
+            loadMoreImpl,
             vb.root.findViewById(CommonId.STATE_ID),
             vb.root.findViewById(CommonId.REFRESH_ID)
         ) {
-            
-            this.enableLoadMore = enableLoadMore
-            this.triggerLoadMoreByScroll = triggerLoadMoreByScroll
-
-            /*if load-more is enabled.*/
-            onLoadMoreCreated = {
-                loadMoreImpl = it
-                recyclerView.adapter = it
-            }
 
             this.onRetry = {
                 this@BaseListFragment.onRetry(it)
@@ -100,6 +94,10 @@ abstract class BaseListFragment<T, VB : ViewBinding> : BaseUIFragment<VB>(), Lis
 
     override fun isEmpty(): Boolean {
         return listLayoutHostImpl.isEmpty()
+    }
+
+    override fun getListSize(): Int {
+        return listLayoutHostImpl.getListSize()
     }
 
     override fun isLoadingMore(): Boolean {

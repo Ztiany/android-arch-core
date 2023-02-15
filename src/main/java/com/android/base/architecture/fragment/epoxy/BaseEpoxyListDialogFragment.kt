@@ -2,14 +2,12 @@ package com.android.base.architecture.fragment.epoxy
 
 import android.os.Bundle
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
-import com.android.base.AndroidSword
 import com.android.base.architecture.fragment.base.BaseUIDialogFragment
+import com.android.base.architecture.fragment.list.buildListLayoutHost
 import com.android.base.architecture.ui.CommonId
-import com.android.base.architecture.ui.list.ListDataOperator
+import com.android.base.architecture.ui.list.ListDataHost
 import com.android.base.architecture.ui.list.ListLayoutHost
-import com.android.base.architecture.ui.list.PagerSize
 import com.android.base.architecture.ui.list.Paging
 import com.android.base.architecture.ui.state.StateLayoutConfig
 import com.android.base.architecture.ui.submitListResult
@@ -35,29 +33,21 @@ abstract class BaseEpoxyListDialogFragment<T, VB : ViewBinding> : BaseUIDialogFr
     abstract fun provideListImplementation(view: View, savedInstanceState: Bundle?): ListLayoutHost<T>
 
     /**
-     * For the parameter [listDataOperator], you could have a class inherited from [ListEpoxyController].
+     * For the parameter [listDataHost], you could have a class inherited from [ListEpoxyController].
      */
-    @SuppressWarnings("WeakerAccess")
-    protected fun <A> setUpList(
-        listDataOperator: A,
-        recyclerView: RecyclerView,
-        enableLoadMore: Boolean = false,
-        triggerLoadMoreByScroll: Boolean =  AndroidSword.loadMoreTriggerByScroll
-    ): ListLayoutHost<T> where A : ListDataOperator<T>, A : ListEpoxyControllerInterface, A : PagerSize {
+    protected fun setUpList(
+        listDataHost: ListDataHost<T>,
+        loadMoreController: LoadMoreController? = null
+    ): ListLayoutHost<T> {
 
-        return buildEpoxyListLayoutHost(
-            listDataOperator,
-            recyclerView,
+        this.loadMoreImpl = loadMoreController
+
+        return buildListLayoutHost(
+            listDataHost,
+            loadMoreImpl,
             vb.root.findViewById(CommonId.STATE_ID),
             vb.root.findViewById(CommonId.REFRESH_ID)
         ) {
-
-            this.enableLoadMore = enableLoadMore
-            this.triggerLoadMoreByScroll = triggerLoadMoreByScroll
-
-            onLoadMoreCreated = {
-                loadMoreImpl = it
-            }
 
             this.onRetry = {
                 this@BaseEpoxyListDialogFragment.onRetry(it)
@@ -94,6 +84,10 @@ abstract class BaseEpoxyListDialogFragment<T, VB : ViewBinding> : BaseUIDialogFr
 
     override fun isEmpty(): Boolean {
         return listLayoutHostImpl.isEmpty()
+    }
+
+    override fun getListSize(): Int {
+        return listLayoutHostImpl.getListSize()
     }
 
     override fun isLoadingMore(): Boolean {

@@ -32,9 +32,7 @@ interface DataManager<T> {
     fun replaceAll(elements: List<T>)
 
     /**
-     * 此方法会使用 newDataSource 替换掉之前的数据源，而不对之前的数据源做任何操作。
-     *
-     * @param newDataSource        新的数据集
+     * 此方法会使用 [newDataSource] 直接替换掉之前的数据源。
      */
     fun setDataSource(newDataSource: MutableList<T>)
 

@@ -1,32 +1,27 @@
 package com.android.base.architecture.fragment.list
 
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView.Adapter
-import com.android.base.adapter.DataManager
 import com.android.base.architecture.ui.list.*
 import com.android.base.architecture.ui.state.OnRetryActionListener
 import com.android.base.architecture.ui.state.StateLayout
 import com.android.base.architecture.ui.state.StateLayoutConfig
-import com.ztiany.loadmore.adapter.LoadMoreAdapter
 import com.ztiany.loadmore.adapter.LoadMoreController
 import com.ztiany.loadmore.adapter.OnLoadMoreListener
 
 class ListLayoutHostConfig {
-    var enableLoadMore: Boolean = false
-    var triggerLoadMoreByScroll: Boolean = false
     var onRetry: ((state: Int) -> Unit)? = null
-    var onLoadMoreCreated: ((LoadMoreAdapter) -> Unit)? = null
     var onRefresh: (() -> Unit)? = null
     var onLoadMore: (() -> Unit)? = null
 }
 
 /** It is useful when there is more than one list layout in a fragment. */
-fun <T, A> buildListLayoutHost(
-    dataManager: A,
+fun <T> buildListLayoutHost(
+    listDataHost: ListDataHost<T>,
+    loadMoreController: LoadMoreController?,
     stateLayout: View,
     refreshLayout: View? = null,
     config: ListLayoutHostConfig.() -> Unit
-): ListLayoutHost<T> where A : DataManager<T>, A : Adapter<*> {
+): ListLayoutHost<T> {
 
     val stateLayoutImpl = (stateLayout as? StateLayout) ?: throw IllegalStateException("Make sure that stateLayout implements StateLayout.")
 
@@ -37,14 +32,6 @@ fun <T, A> buildListLayoutHost(
     }
 
     val hostConfig = ListLayoutHostConfig().apply(config)
-
-    val loadMoreController: LoadMoreController? = if (hostConfig.enableLoadMore) {
-        LoadMoreAdapter.wrap(dataManager, hostConfig.triggerLoadMoreByScroll).also {
-            hostConfig.onLoadMoreCreated?.invoke(it)
-        }
-    } else {
-        null
-    }
 
     refreshLayoutImpl?.setRefreshHandler(object : RefreshView.RefreshHandler() {
         override fun onRefresh() {
@@ -81,17 +68,17 @@ fun <T, A> buildListLayoutHost(
     return object : ListLayoutHost<T> {
 
         val pager = AutoPaging(this, object : PagerSize {
-            override fun getDataSize(): Int {
-                return dataManager.getDataSize()
+            override fun getSize(): Int {
+                return listDataHost.getListSize()
             }
         })
 
         override fun replaceData(data: List<T>) {
-            dataManager.replaceAll(data)
+            listDataHost.replaceData(data)
         }
 
         override fun addData(data: List<T>) {
-            dataManager.addItems(data)
+            listDataHost.addData(data)
         }
 
         override fun loadMoreCompleted(hasMore: Boolean) {
@@ -107,7 +94,11 @@ fun <T, A> buildListLayoutHost(
         }
 
         override fun isEmpty(): Boolean {
-            return dataManager.isEmpty()
+            return listDataHost.isEmpty()
+        }
+
+        override fun getListSize(): Int {
+            return listDataHost.getListSize()
         }
 
         override fun isLoadingMore(): Boolean {

@@ -1,7 +1,6 @@
 package com.android.base.architecture.fragment.list2
 
 import android.view.View
-import com.android.base.adapter.DataManager
 import com.android.base.architecture.ui.list.*
 import com.android.base.architecture.ui.state.OnRetryActionListener
 import com.android.base.architecture.ui.state.StateLayout
@@ -15,7 +14,7 @@ class ListLayoutHostConfig2 {
 
 /** It is useful when there is more than one list layout in a fragment. */
 fun <T> buildListLayoutHost2(
-    dataManager: DataManager<T>,
+    dataManager: ListDataHost<T>,
     stateLayout: View,
     refreshLoadMoreView: View,
     config: ListLayoutHostConfig2.() -> Unit
@@ -47,11 +46,11 @@ fun <T> buildListLayoutHost2(
     return object : ListLayoutHost<T> {
 
         override fun replaceData(data: List<T>) {
-            dataManager.replaceAll(data)
+            dataManager.replaceData(data)
         }
 
         override fun addData(data: List<T>) {
-            dataManager.addItems(data)
+            dataManager.addData(data)
         }
 
         override fun loadMoreCompleted(hasMore: Boolean) {
@@ -64,14 +63,18 @@ fun <T> buildListLayoutHost2(
 
         override fun getPager(): Paging {
             return AutoPaging(this, object : PagerSize {
-                override fun getDataSize(): Int {
-                    return dataManager.getDataSize()
+                override fun getSize(): Int {
+                    return dataManager.getListSize()
                 }
             })
         }
 
         override fun isEmpty(): Boolean {
             return dataManager.isEmpty()
+        }
+
+        override fun getListSize(): Int {
+            return dataManager.getListSize()
         }
 
         override fun isLoadingMore(): Boolean {
