@@ -39,6 +39,8 @@ class ResourceHandlerBuilder<L, D, E> {
     /** [onNoData] will be called only when [Resource] is [NoData]. */
     var onNoData: (() -> Unit)? = null
 
+    var onUninitialized: (() -> Unit)? = null
+
     /** when [Resource] is [Loading], what to show on the loading dialog. */
     var loadingMessage: CharSequence = ""
 
@@ -48,7 +50,7 @@ class ResourceHandlerBuilder<L, D, E> {
     /** indicate whether the loading dialog is cancelable. */
     var forceLoading: Boolean = true
 
-    /** mark the event handled so that it will not be handled again. refer [ViewModel One-off event antipatterns](https://manuelvivo.dev/viewmodel-events-antipatterns) for more details. */
+    /** mark the event handled so that it will not be handled again. refer to [ViewModel One-off event antipatterns](https://manuelvivo.dev/viewmodel-events-antipatterns) for more details. */
     var clearAfterHanded: Boolean = true
 }
 
@@ -134,7 +136,9 @@ private fun <H, L, D, E> H.handleResourceInternal(
 
     when (state) {
         is Uninitialized -> {
-            /*no op*/
+            dismissLoadingDialogDelayed {
+                handlerBuilder.onUninitialized?.invoke()
+            }
         }
 
         //----------------------------------------loading start
