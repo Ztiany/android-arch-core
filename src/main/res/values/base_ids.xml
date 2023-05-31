@@ -19,7 +19,4 @@
     <item name="base_state_layout" type="id" />
     <item name="base_tag_multi_state_view" type="id" />
 
-    <!--toolbar-->
-    <item name="common_toolbar" type="id" />
-
 </resources>

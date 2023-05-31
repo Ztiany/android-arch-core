@@ -46,7 +46,6 @@ dependencies {
     api AndroidLibraries.fragmentKtx
     api AndroidLibraries.appcompat
     api AndroidLibraries.recyclerView
-    api AndroidLibraries.percentLayout
     api AndroidLibraries.constraintLayout
     api AndroidLibraries.swiperefreshlayout
     api AndroidLibraries.material

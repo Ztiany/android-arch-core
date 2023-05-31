@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="BaseArchStyle" />
+
     <!--状态布局-->
-    <style name="Base_SimpleMultiStateView">
+    <style name="BaseArchStyle.SimpleMultiStateView">
         <item name="android:id">@id/base_state_layout</item>
         <item name="msv_viewState">content</item>
 

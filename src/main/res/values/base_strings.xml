@@ -1,8 +1,8 @@
 <resources>
 
     <!-- ================== 通用  ================== -->
-    <string name="Base_Confirm">确认</string>
-    <string name="Base_Cancel">取消</string>
+    <string name="base_confirm">确认</string>
+    <string name="base_cancel">取消</string>
 
     <!-- ================== 错误状态布局  ================== -->
     <string name="base_error_load_fail_tips">加载失败了/(ㄒoㄒ)/~~ </string>

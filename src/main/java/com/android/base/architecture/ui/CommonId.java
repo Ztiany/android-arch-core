@@ -17,6 +17,4 @@ public class CommonId {
     public static final int RETRY_IV_ID = R.id.base_retry_icon;
     public static final int RETRY_BTN_ID = R.id.base_retry_btn;
 
-    public static final int TOOLBAR_ID = R.id.common_toolbar;
-
 }

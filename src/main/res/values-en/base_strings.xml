@@ -1,8 +1,8 @@
 <resources>
 
     <!-- ================== Common  ================== -->
-    <string name="Base_Confirm">Confirm</string>
-    <string name="Base_Cancel">Cancel</string>
+    <string name="base_confirm">Confirm</string>
+    <string name="base_cancel">Cancel</string>
 
     <!-- ================== error layout  ================== -->
     <string name="base_error_load_fail_tips">Failed to load/(ㄒoㄒ)/~~</string>
