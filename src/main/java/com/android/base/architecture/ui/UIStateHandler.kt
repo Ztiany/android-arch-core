@@ -24,11 +24,11 @@ fun LoadingViewHost.dismissLoadingDialogDelayed(onDismiss: (() -> Unit)? = null)
 /** Configure how to handle UI state [Resource]. */
 class ResourceHandlerBuilder<L, D, E> {
 
-    /** [onLoading] will be called once [Resource] is [Loading]. */
-    var onLoading: ((L?) -> Unit)? = null
+    /** [onLoadingState] will be called once state is changed. */
+    var onLoadingState: ((isLoading: Boolean, step: L?) -> Unit)? = null
 
     /** [onError] will be called once [Resource] is [Error]. */
-    var onError: ((Throwable, E?) -> Unit)? = null
+    var onError: ((Throwable, reason: E?) -> Unit)? = null
 
     /** [onSuccess] will always be called once [Resource] is [Success]. */
     var onSuccess: ((D?) -> Unit)? = null
@@ -138,6 +138,7 @@ private fun <H, L, D, E> H.handleResourceInternal(
         is Uninitialized -> {
             dismissLoadingDialogDelayed {
                 handlerBuilder.onUninitialized?.invoke()
+                handlerBuilder.onLoadingState?.invoke(false, null)
             }
         }
 
@@ -145,10 +146,10 @@ private fun <H, L, D, E> H.handleResourceInternal(
         // The loading state should always be handled, so we ignore the clearAfterHanded config here.
         is Loading -> {
             if (handlerBuilder.showLoading) {
-                if (handlerBuilder.onLoading == null) {
+                if (handlerBuilder.onLoadingState == null) {
                     showLoadingDialog(handlerBuilder.loadingMessage, !handlerBuilder.forceLoading)
                 } else {
-                    handlerBuilder.onLoading?.invoke(state.step)
+                    handlerBuilder.onLoadingState?.invoke(true, state.step)
                 }
             }
         }
@@ -157,6 +158,7 @@ private fun <H, L, D, E> H.handleResourceInternal(
         //----------------------------------------error start
         is Error -> {
             if (state.isHandled) {
+                handlerBuilder.onLoadingState?.invoke(false, null)
                 return
             }
             if (handlerBuilder.clearAfterHanded) {
@@ -164,6 +166,7 @@ private fun <H, L, D, E> H.handleResourceInternal(
             }
 
             dismissLoadingDialogDelayed {
+                handlerBuilder.onLoadingState?.invoke(false, null)
                 val onError = handlerBuilder.onError
                 if (onError != null) {
                     onError(state.error, state.reason)
@@ -177,6 +180,7 @@ private fun <H, L, D, E> H.handleResourceInternal(
         //----------------------------------------success start
         is Success<D> -> {
             if (state.isHandled) {
+                handlerBuilder.onLoadingState?.invoke(false, null)
                 return
             }
             if (handlerBuilder.clearAfterHanded) {
@@ -184,11 +188,13 @@ private fun <H, L, D, E> H.handleResourceInternal(
             }
 
             dismissLoadingDialogDelayed {
+                handlerBuilder.onLoadingState?.invoke(false, null)
                 when (state) {
                     is NoData -> {
                         handlerBuilder.onSuccess?.invoke(null)
                         handlerBuilder.onNoData?.invoke()
                     }
+
                     is Data<D> -> {
                         handlerBuilder.onSuccess?.invoke(state.value)
                         handlerBuilder.onData?.invoke(state.value)
