@@ -1,15 +1,20 @@
 package com.android.base.architecture.fragment.base
 
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.StringRes
 import androidx.annotation.UiThread
 import androidx.fragment.app.Fragment
+import com.android.base.AndroidSword
 import com.android.base.architecture.activity.BackHandlerHelper
 import com.android.base.architecture.activity.OnBackPressListener
+import com.android.base.architecture.fragment.tools.dismissDialog
+import com.android.base.architecture.ui.loading.LoadingViewHost
 import com.android.base.delegate.fragment.FragmentDelegate
 import com.android.base.delegate.fragment.FragmentDelegateOwner
 import com.android.base.delegate.helper.FragmentDelegates
@@ -20,7 +25,11 @@ import timber.log.Timber
  *
  * @author Ztiany
  */
-open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner {
+open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner, LoadingViewHost {
+
+    private var recentShowingDialogTime: Long = 0
+
+    private var loadingViewHost: LoadingViewHost? = null
 
     private val fragmentDelegates by lazy { FragmentDelegates(this) }
 
@@ -41,7 +50,7 @@ open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         Timber.tag(tag()).d("-->onCreateView  savedInstanceState = %s", savedInstanceState)
         return super.onCreateView(inflater, container, savedInstanceState)
@@ -53,6 +62,7 @@ open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner
         fragmentDelegates.onViewCreated(view, savedInstanceState)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         Timber.tag(tag()).d("-->onActivityCreated savedInstanceState  =  $savedInstanceState")
@@ -92,6 +102,7 @@ open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner
     override fun onDestroy() {
         Timber.tag(tag()).d("-->onDestroy")
         fragmentDelegates.onDestroy()
+        dismissLoadingDialog()
         super.onDestroy()
     }
 
@@ -106,6 +117,7 @@ open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner
         super.onSaveInstanceState(outState)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
         super.setUserVisibleHint(isVisibleToUser)
         Timber.tag(tag()).d("-->setUserVisibleHint = $isVisibleToUser")
@@ -118,15 +130,17 @@ open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner
         fragmentDelegates.onHiddenChanged(hidden)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         fragmentDelegates.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         fragmentDelegates.onActivityResult(requestCode, resultCode, data)
@@ -152,10 +166,65 @@ open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner
     }
 
     /**
-     * Fragment需要自己处理BackPress事件，如果不处理，就交给子Fragment处理，都不处理则由Activity处理。
+     * Fragment 需要自己处理 BackPress 事件，如果不处理，就交给子 Fragment 处理，都不处理则由 Activity 处理。
      */
     protected open fun handleBackPress(): Boolean {
         return false
+    }
+
+
+    private fun loadingView(): LoadingViewHost {
+        val loadingViewImpl = loadingViewHost
+        return if (loadingViewImpl != null) {
+            loadingViewImpl
+        } else {
+            loadingViewHost = onCreateLoadingView() ?: AndroidSword.loadingViewHostFactory?.invoke(requireContext())
+            loadingViewHost ?: throw NullPointerException("you need to config LoadingViewFactory in Sword or implement onCreateLoadingView.")
+        }
+    }
+
+    protected open fun onCreateLoadingView(): LoadingViewHost? {
+        return null
+    }
+
+    override fun showLoadingDialog(): Dialog {
+        recentShowingDialogTime = System.currentTimeMillis()
+        return loadingView().showLoadingDialog(true)
+    }
+
+    override fun showLoadingDialog(cancelable: Boolean): Dialog {
+        recentShowingDialogTime = System.currentTimeMillis()
+        return loadingView().showLoadingDialog(cancelable)
+    }
+
+    override fun showLoadingDialog(message: CharSequence, cancelable: Boolean): Dialog {
+        recentShowingDialogTime = System.currentTimeMillis()
+        return loadingView().showLoadingDialog(message, cancelable)
+    }
+
+    override fun showLoadingDialog(@StringRes messageId: Int, cancelable: Boolean): Dialog {
+        recentShowingDialogTime = System.currentTimeMillis()
+        return loadingView().showLoadingDialog(messageId, cancelable)
+    }
+
+    override fun dismissLoadingDialog() {
+        loadingViewHost?.dismissLoadingDialog()
+    }
+
+    override fun dismissLoadingDialog(minimumMills: Long, onDismiss: (() -> Unit)?) {
+        dismissDialog(recentShowingDialogTime, minimumMills, onDismiss)
+    }
+
+    override fun isLoadingDialogShowing(): Boolean {
+        return loadingViewHost != null && loadingView().isLoadingDialogShowing()
+    }
+
+    override fun showMessage(message: CharSequence) {
+        loadingView().showMessage(message)
+    }
+
+    override fun showMessage(@StringRes messageId: Int) {
+        loadingView().showMessage(messageId)
     }
 
 }

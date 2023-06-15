@@ -14,6 +14,8 @@ import com.android.base.foundation.data.NoData
 import com.android.base.foundation.data.State
 import com.android.base.foundation.data.Success
 
+//TODO: refactor this to DSL style.
+
 private fun <D> newDefaultChecker(): ((D) -> Boolean) {
     return { data ->
         (data is CharSequence && (data.isEmpty() || data.isBlank()))
@@ -35,7 +37,7 @@ fun <L, D, E> StateLayoutHost.handleSateResource(
     isEmpty: ((D) -> Boolean)? = newDefaultChecker(),
     onError: ((Throwable, E?) -> Unit)? = null,
     onEmpty: (() -> Unit)? = null,
-    onResult: ((D) -> Unit)
+    onResult: ((D) -> Unit),
 ) {
     when (state) {
         is Loading -> showLoadingLayout()
@@ -46,6 +48,7 @@ fun <L, D, E> StateLayoutHost.handleSateResource(
                 onError(state.error, state.reason)
             }
         }
+
         is Success<D> -> {
             when (state) {
                 is NoData -> handleStateResult(null, isEmpty, onEmpty, onResult)
@@ -59,7 +62,7 @@ fun <D> StateLayoutHost.handleStateResult(
     data: D?,
     isEmpty: ((D) -> Boolean)? = newDefaultChecker(),
     onEmpty: (() -> Unit)? = null,
-    onResult: ((D) -> Unit)
+    onResult: ((D) -> Unit),
 ) {
     if (isRefreshEnable && isRefreshing()) {
         refreshCompleted()

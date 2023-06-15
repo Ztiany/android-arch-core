@@ -2,13 +2,19 @@ package com.android.base.architecture.ui
 
 import com.android.base.AndroidSword
 import com.android.base.architecture.ui.list.ListLayoutHost
-import com.android.base.foundation.data.*
+import com.android.base.foundation.data.Data
+import com.android.base.foundation.data.Error
+import com.android.base.foundation.data.Loading
+import com.android.base.foundation.data.NoData
+import com.android.base.foundation.data.State
+import com.android.base.foundation.data.Success
 
+//TODO: refactor this to DSL style.
 fun <L, D, E> ListLayoutHost<D>.handleListResource(
     state: State<L, List<D>, E>,
     hasMore: (() -> Boolean)? = null,
     onEmpty: (() -> Unit)? = null,
-    onError: ((Throwable, E?) -> Unit)? = null
+    onError: ((Throwable, E?) -> Unit)? = null,
 ) {
     when (state) {
         is Loading -> handleListLoading()
@@ -19,6 +25,7 @@ fun <L, D, E> ListLayoutHost<D>.handleListResource(
                 onError(state.error, state.reason)
             }
         }
+
         is Success<List<D>> -> {
             when (state) {
                 is NoData -> handleListResult(null, hasMore, onEmpty)
@@ -31,7 +38,7 @@ fun <L, D, E> ListLayoutHost<D>.handleListResource(
 fun <D> ListLayoutHost<D>.handleListResult(
     list: List<D>?,
     hasMore: (() -> Boolean)? = null,
-    onEmpty: (() -> Unit)? = null
+    onEmpty: (() -> Unit)? = null,
 ) {
 
     if (isLoadingMore()) {

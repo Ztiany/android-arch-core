@@ -9,13 +9,12 @@ import com.android.base.foundation.data.State
 import com.android.base.foundation.data.Success
 
 
-//----------------------------------------------Fully Submit List And With State----------------------------------------------
-
+//TODO: refactor this to DSL style.
 fun <L, D, E> ListLayoutHost<D>.submitListResource(
     state: State<L, List<D>, E>,
     hasMore: Boolean,
     onEmpty: (() -> Unit)? = null,
-    onError: ((Throwable, E?) -> Unit)? = null
+    onError: ((Throwable, E?) -> Unit)? = null,
 ) {
     when (state) {
         is Loading -> handleListLoading()
@@ -26,6 +25,7 @@ fun <L, D, E> ListLayoutHost<D>.submitListResource(
                 onError(state.error, state.reason)
             }
         }
+
         is Success<List<D>> -> {
             when (state) {
                 is NoData -> submitListResult(null, hasMore, onEmpty)

@@ -24,33 +24,79 @@ fun LoadingViewHost.dismissLoadingDialogDelayed(onDismiss: (() -> Unit)? = null)
 /** Configure how to handle UI state [State]. */
 class ResourceHandlerBuilder<L, D, E> {
 
-    /** [onLoading] will be called once state is changed. */
-    var onLoading: ((step: L?) -> Unit)? = null
-    var onLoadingEnd: (() -> Unit)? = null
+    internal var onLoading: ((step: L?) -> Unit)? = null
+    internal var onLoadingEnd: (() -> Unit)? = null
+    internal var onError: ((error: Throwable, reason: E?) -> Unit)? = null
+    internal var onSuccess: ((D?) -> Unit)? = null
+    internal var onData: ((D) -> Unit)? = null
+    internal var onNoData: (() -> Unit)? = null
+    internal var loadingMessage: CharSequence = ""
+    internal var showLoading: Boolean = true
+    internal var forceLoading: Boolean = true
+    internal var clearAfterHanded: Boolean = true
+
+    /** [onLoadingWithStep] will be called once state is [Loading]. */
+    fun onLoadingWithStep(onLoading: ((step: L?) -> Unit)? = null) {
+        this.onLoading = onLoading
+    }
+
+    /** [onLoading] will be called once state is [Loading]. */
+    fun onLoading(onLoading: (() -> Unit)? = null) {
+        onLoadingWithStep {
+            onLoading?.invoke()
+        }
+    }
+
+    /** [onLoadingEnd] will be called once state is not [Loading].. */
+    fun onLoadingEnd(onLoadingEnd: (() -> Unit)? = null) {
+        this.onLoadingEnd = onLoadingEnd
+    }
 
     /** [onError] will be called once [State] is [Error]. */
-    var onError: ((Throwable, reason: E?) -> Unit)? = null
+    fun onError(onError: ((error: Throwable) -> Unit)? = null) {
+        onErrorWithReason { error, _ -> onError?.invoke(error) }
+    }
+
+    /** [onErrorWithReason] will be called once [State] is [Error]. */
+    fun onErrorWithReason(onError: ((error: Throwable, reason: E?) -> Unit)? = null) {
+        this.onError = onError
+    }
 
     /** [onSuccess] will always be called once [State] is [Success]. */
-    var onSuccess: ((D?) -> Unit)? = null
+    fun onSuccess(onSuccess: ((D?) -> Unit)? = null) {
+        this.onSuccess = onSuccess
+    }
 
     /** [onData] will be called only when [State] is [Data]. */
-    var onData: ((D) -> Unit)? = null
+    fun onData(onData: ((D) -> Unit)? = null) {
+        this.onData = onData
+    }
 
     /** [onNoData] will be called only when [State] is [NoData]. */
-    var onNoData: (() -> Unit)? = null
+    fun onNoData(onNoData: (() -> Unit)? = null) {
+        this.onNoData = onNoData
+    }
 
     /** when [State] is [Loading], what to show on the loading dialog. */
-    var loadingMessage: CharSequence = ""
+    fun loadingMessage(loadingMessage: CharSequence) {
+        this.loadingMessage = loadingMessage
+    }
 
     /** indicate whether the loading dialog should be showing when [State] is [Loading]. */
-    var showLoading: Boolean = true
+    fun disableLoading() {
+        showLoading = false
+    }
 
     /** indicate whether the loading dialog is cancelable. */
-    var forceLoading: Boolean = true
+    fun forceLoading() {
+        this.forceLoading = true
+    }
 
     /** mark the event handled so that it will not be handled again. refer to [ViewModel One-off event antipatterns](https://manuelvivo.dev/viewmodel-events-antipatterns) for more details. */
-    var clearAfterHanded: Boolean = true
+    fun clearAfterHanded() {
+        this.clearAfterHanded = true
+    }
+
 }
 
 /**

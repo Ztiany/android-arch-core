@@ -1,28 +1,19 @@
 package com.android.base.architecture.fragment.base
 
-import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
-import androidx.annotation.StringRes
 import androidx.viewbinding.ViewBinding
-import com.android.base.AndroidSword
 import com.android.base.architecture.fragment.tools.ReusableView
-import com.android.base.architecture.fragment.tools.dismissDialog
-import com.android.base.architecture.ui.loading.LoadingViewHost
 import com.android.base.architecture.ui.viewbniding.inflateBindingWithParameterizedType
 
 /**
  *@author Ztiany
  * @see BaseUIFragment
  */
-abstract class BaseUIDialogFragment<VB : ViewBinding> : BaseDialogFragment(), LoadingViewHost {
-
-    private var recentShowingDialogTime: Long = 0
-
-    private var loadingViewHost: LoadingViewHost? = null
+abstract class BaseUIDialogFragment<VB : ViewBinding> : BaseDialogFragment(){
 
     private val reuseView by lazy { ReusableView() }
 
@@ -80,61 +71,7 @@ abstract class BaseUIDialogFragment<VB : ViewBinding> : BaseDialogFragment(), Lo
 
     override fun onDestroy() {
         super.onDestroy()
-        dismissLoadingDialog()
-    }
-
-    protected open fun onCreateLoadingView(): LoadingViewHost? {
-        return null
-    }
-
-    private fun loadingView(): LoadingViewHost {
-        val loadingViewImpl = loadingViewHost
-        return if (loadingViewImpl != null) {
-            loadingViewImpl
-        } else {
-            loadingViewHost = onCreateLoadingView() ?: AndroidSword.loadingViewHostFactory?.invoke(requireContext())
-            loadingViewHost ?: throw NullPointerException("you need to config LoadingViewFactory in Sword or implement onCreateLoadingView.")
-        }
-    }
-
-    override fun showLoadingDialog(): Dialog {
-        recentShowingDialogTime = System.currentTimeMillis()
-        return loadingView().showLoadingDialog(true)
-    }
-
-    override fun showLoadingDialog(cancelable: Boolean): Dialog {
-        recentShowingDialogTime = System.currentTimeMillis()
-        return loadingView().showLoadingDialog(cancelable)
-    }
-
-    override fun showLoadingDialog(message: CharSequence, cancelable: Boolean): Dialog {
-        recentShowingDialogTime = System.currentTimeMillis()
-        return loadingView().showLoadingDialog(message, cancelable)
-    }
-
-    override fun showLoadingDialog(@StringRes messageId: Int, cancelable: Boolean): Dialog {
-        recentShowingDialogTime = System.currentTimeMillis()
-        return loadingView().showLoadingDialog(messageId, cancelable)
-    }
-
-    override fun dismissLoadingDialog() {
-        loadingViewHost?.dismissLoadingDialog()
-    }
-
-    override fun dismissLoadingDialog(minimumMills: Long, onDismiss: (() -> Unit)?) {
-        dismissDialog(recentShowingDialogTime, minimumMills, onDismiss)
-    }
-
-    override fun isLoadingDialogShowing(): Boolean {
-        return loadingViewHost != null && loadingView().isLoadingDialogShowing()
-    }
-
-    override fun showMessage(message: CharSequence) {
-        loadingView().showMessage(message)
-    }
-
-    override fun showMessage(@StringRes messageId: Int) {
-        loadingView().showMessage(messageId)
+        _vb = null
     }
 
 }
