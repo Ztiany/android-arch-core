@@ -21,30 +21,29 @@ fun LoadingViewHost.dismissLoadingDialogDelayed(onDismiss: (() -> Unit)? = null)
     dismissLoadingDialog(AndroidSword.minimalDialogDisplayTime, onDismiss)
 }
 
-/** Configure how to handle UI state [Resource]. */
+/** Configure how to handle UI state [State]. */
 class ResourceHandlerBuilder<L, D, E> {
 
-    /** [onLoadingState] will be called once state is changed. */
-    var onLoadingState: ((isLoading: Boolean, step: L?) -> Unit)? = null
+    /** [onLoading] will be called once state is changed. */
+    var onLoading: ((step: L?) -> Unit)? = null
+    var onLoadingEnd: (() -> Unit)? = null
 
-    /** [onError] will be called once [Resource] is [Error]. */
+    /** [onError] will be called once [State] is [Error]. */
     var onError: ((Throwable, reason: E?) -> Unit)? = null
 
-    /** [onSuccess] will always be called once [Resource] is [Success]. */
+    /** [onSuccess] will always be called once [State] is [Success]. */
     var onSuccess: ((D?) -> Unit)? = null
 
-    /** [onData] will be called only when [Resource] is [Data]. */
+    /** [onData] will be called only when [State] is [Data]. */
     var onData: ((D) -> Unit)? = null
 
-    /** [onNoData] will be called only when [Resource] is [NoData]. */
+    /** [onNoData] will be called only when [State] is [NoData]. */
     var onNoData: (() -> Unit)? = null
 
-    var onUninitialized: (() -> Unit)? = null
-
-    /** when [Resource] is [Loading], what to show on the loading dialog. */
+    /** when [State] is [Loading], what to show on the loading dialog. */
     var loadingMessage: CharSequence = ""
 
-    /** indicate whether the loading dialog should be showing when [Resource] is [Loading]. */
+    /** indicate whether the loading dialog should be showing when [State] is [Loading]. */
     var showLoading: Boolean = true
 
     /** indicate whether the loading dialog is cancelable. */
@@ -61,15 +60,15 @@ class ResourceHandlerBuilder<L, D, E> {
  * 2. 网络请求正常返回，则展示调用结果。
  * 3. 网络请求发送错误，则提示用户请求错误。
  *
- * [Resource] 表示请求状态，每次状态变更，[LiveData] 都应该进行通知，该方法订阅 [LiveData] 并对各种状态进行处理。
+ * [State] 表示请求状态，每次状态变更，[LiveData] 都应该进行通知，该方法订阅 [LiveData] 并对各种状态进行处理。
  * 展示 loading 和对错误进行提示都是自动进行的，通常情况下，只需要提供 [ResourceHandlerBuilder.onSuccess] 对正常的网络结果进行处理即可。
  * 当然如果希望自己处理错误，则可以提供 [ResourceHandlerBuilder.onError] 回调。如果希望自己处理加载中的逻辑，则可以提供 [ResourceHandlerBuilder.onLoading] 回调。
  *
  * 另外需要注意的是：[ResourceHandlerBuilder.onSuccess] =  [ResourceHandlerBuilder.onData] + [ResourceHandlerBuilder.onNoData]，请根据你的偏好进行选择。
  */
 fun <H, L, D, E> H.handleLiveData(
-    data: LiveData<Resource<L, D, E>>,
-    handlerBuilder: ResourceHandlerBuilder<L, D, E>.() -> Unit
+    data: LiveData<State<L, D, E>>,
+    handlerBuilder: ResourceHandlerBuilder<L, D, E>.() -> Unit,
 ) where H : LoadingViewHost, H : LifecycleOwner {
     val builder = ResourceHandlerBuilder<L, D, E>().apply {
         handlerBuilder()
@@ -83,8 +82,8 @@ fun <H, L, D, E> H.handleLiveData(
 /** refers to [handleLiveData] for details. If you are using a [Fragment] with Ui, you probably need to use [handleFlowWithViewLifecycle] instead. */
 fun <H, L, D, E> H.handleFlowWithLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
-    data: Flow<Resource<L, D, E>>,
-    handlerBuilder: ResourceHandlerBuilder<L, D, E>.() -> Unit
+    data: Flow<State<L, D, E>>,
+    handlerBuilder: ResourceHandlerBuilder<L, D, E>.() -> Unit,
 ) where H : LoadingViewHost, H : LifecycleOwner {
     val builder = ResourceHandlerBuilder<L, D, E>().apply {
         handlerBuilder()
@@ -102,8 +101,8 @@ fun <H, L, D, E> H.handleFlowWithLifecycle(
 /** refers to [handleLiveData] for details. Notes：You should call this method in [Fragment.onViewCreated]. */
 fun <H, L, D, E> H.handleFlowWithViewLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
-    data: Flow<Resource<L, D, E>>,
-    handlerBuilder: ResourceHandlerBuilder<L, D, E>.() -> Unit
+    data: Flow<State<L, D, E>>,
+    handlerBuilder: ResourceHandlerBuilder<L, D, E>.() -> Unit,
 ) where H : LoadingViewHost, H : Fragment {
     val builder = ResourceHandlerBuilder<L, D, E>().apply {
         handlerBuilder()
@@ -120,8 +119,8 @@ fun <H, L, D, E> H.handleFlowWithViewLifecycle(
 
 /** refers to [handleLiveData] for details. */
 fun <H, L, D, E> H.handleResource(
-    state: Resource<L, D, E>,
-    handlerBuilder: ResourceHandlerBuilder<L, D, E>.() -> Unit
+    state: State<L, D, E>,
+    handlerBuilder: ResourceHandlerBuilder<L, D, E>.() -> Unit,
 ) where H : LoadingViewHost, H : LifecycleOwner {
     val builder = ResourceHandlerBuilder<L, D, E>().apply {
         handlerBuilder()
@@ -130,26 +129,19 @@ fun <H, L, D, E> H.handleResource(
 }
 
 private fun <H, L, D, E> H.handleResourceInternal(
-    state: Resource<L, D, E>,
-    handlerBuilder: ResourceHandlerBuilder<L, D, E>
+    state: State<L, D, E>,
+    handlerBuilder: ResourceHandlerBuilder<L, D, E>,
 ) where H : LoadingViewHost, H : LifecycleOwner {
 
     when (state) {
-        is Uninitialized -> {
-            dismissLoadingDialogDelayed {
-                handlerBuilder.onUninitialized?.invoke()
-                handlerBuilder.onLoadingState?.invoke(false, null)
-            }
-        }
-
         //----------------------------------------loading start
         // The loading state should always be handled, so we ignore the clearAfterHanded config here.
         is Loading -> {
             if (handlerBuilder.showLoading) {
-                if (handlerBuilder.onLoadingState == null) {
+                if (handlerBuilder.onLoading == null) {
                     showLoadingDialog(handlerBuilder.loadingMessage, !handlerBuilder.forceLoading)
                 } else {
-                    handlerBuilder.onLoadingState?.invoke(true, state.step)
+                    handlerBuilder.onLoading?.invoke(state.step)
                 }
             }
         }
@@ -158,7 +150,7 @@ private fun <H, L, D, E> H.handleResourceInternal(
         //----------------------------------------error start
         is Error -> {
             if (state.isHandled) {
-                handlerBuilder.onLoadingState?.invoke(false, null)
+                handlerBuilder.onLoadingEnd?.invoke()
                 return
             }
             if (handlerBuilder.clearAfterHanded) {
@@ -166,7 +158,7 @@ private fun <H, L, D, E> H.handleResourceInternal(
             }
 
             dismissLoadingDialogDelayed {
-                handlerBuilder.onLoadingState?.invoke(false, null)
+                handlerBuilder.onLoadingEnd?.invoke()
                 val onError = handlerBuilder.onError
                 if (onError != null) {
                     onError(state.error, state.reason)
@@ -180,7 +172,7 @@ private fun <H, L, D, E> H.handleResourceInternal(
         //----------------------------------------success start
         is Success<D> -> {
             if (state.isHandled) {
-                handlerBuilder.onLoadingState?.invoke(false, null)
+                handlerBuilder.onLoadingEnd?.invoke()
                 return
             }
             if (handlerBuilder.clearAfterHanded) {
@@ -188,7 +180,7 @@ private fun <H, L, D, E> H.handleResourceInternal(
             }
 
             dismissLoadingDialogDelayed {
-                handlerBuilder.onLoadingState?.invoke(false, null)
+                handlerBuilder.onLoadingEnd?.invoke()
                 when (state) {
                     is NoData -> {
                         handlerBuilder.onSuccess?.invoke(null)

@@ -7,7 +7,12 @@ import android.util.SparseLongArray
 import androidx.core.util.isEmpty
 import com.android.base.AndroidSword
 import com.android.base.architecture.ui.state.StateLayoutHost
-import com.android.base.foundation.data.*
+import com.android.base.foundation.data.Data
+import com.android.base.foundation.data.Error
+import com.android.base.foundation.data.Loading
+import com.android.base.foundation.data.NoData
+import com.android.base.foundation.data.State
+import com.android.base.foundation.data.Success
 
 private fun <D> newDefaultChecker(): ((D) -> Boolean) {
     return { data ->
@@ -26,28 +31,25 @@ private fun <D> newDefaultChecker(): ((D) -> Boolean) {
 }
 
 fun <L, D, E> StateLayoutHost.handleSateResource(
-    resource: Resource<L, D, E>,
+    state: State<L, D, E>,
     isEmpty: ((D) -> Boolean)? = newDefaultChecker(),
     onError: ((Throwable, E?) -> Unit)? = null,
     onEmpty: (() -> Unit)? = null,
     onResult: ((D) -> Unit)
 ) {
-    when (resource) {
-        is Uninitialized -> {
-            /*no op*/
-        }
+    when (state) {
         is Loading -> showLoadingLayout()
         is Error -> {
             if (onError == null) {
-                handleStateError(resource.error)
+                handleStateError(state.error)
             } else {
-                onError(resource.error, resource.reason)
+                onError(state.error, state.reason)
             }
         }
         is Success<D> -> {
-            when (resource) {
+            when (state) {
                 is NoData -> handleStateResult(null, isEmpty, onEmpty, onResult)
-                is Data<D> -> handleStateResult(resource.value, isEmpty, onEmpty, onResult)
+                is Data<D> -> handleStateResult(state.value, isEmpty, onEmpty, onResult)
             }
         }
     }

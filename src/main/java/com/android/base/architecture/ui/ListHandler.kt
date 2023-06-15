@@ -5,27 +5,24 @@ import com.android.base.architecture.ui.list.ListLayoutHost
 import com.android.base.foundation.data.*
 
 fun <L, D, E> ListLayoutHost<D>.handleListResource(
-    resource: Resource<L, List<D>, E>,
+    state: State<L, List<D>, E>,
     hasMore: (() -> Boolean)? = null,
     onEmpty: (() -> Unit)? = null,
     onError: ((Throwable, E?) -> Unit)? = null
 ) {
-    when (resource) {
-        is Uninitialized -> {
-            /*no op*/
-        }
+    when (state) {
         is Loading -> handleListLoading()
         is Error -> {
             if (onError == null) {
-                handleListError(resource.error)
+                handleListError(state.error)
             } else {
-                onError(resource.error, resource.reason)
+                onError(state.error, state.reason)
             }
         }
         is Success<List<D>> -> {
-            when (resource) {
+            when (state) {
                 is NoData -> handleListResult(null, hasMore, onEmpty)
-                is Data<List<D>> -> handleListResult(resource.value, hasMore, onEmpty)
+                is Data<List<D>> -> handleListResult(state.value, hasMore, onEmpty)
             }
         }
     }
