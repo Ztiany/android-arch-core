@@ -3,6 +3,7 @@ package com.android.base.architecture.ui
 import com.android.base.architecture.ui.list.ListLayoutHost
 import com.android.base.foundation.data.Data
 import com.android.base.foundation.data.Error
+import com.android.base.foundation.data.Idle
 import com.android.base.foundation.data.Loading
 import com.android.base.foundation.data.NoData
 import com.android.base.foundation.data.State
@@ -17,6 +18,8 @@ fun <L, D, E> ListLayoutHost<D>.submitListResource(
     onError: ((Throwable, E?) -> Unit)? = null,
 ) {
     when (state) {
+        is Idle -> {}
+
         is Loading -> handleListLoading()
         is Error -> {
             if (onError == null) {

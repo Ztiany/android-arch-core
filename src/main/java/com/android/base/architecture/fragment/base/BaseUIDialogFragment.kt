@@ -13,7 +13,7 @@ import com.android.base.architecture.ui.viewbniding.inflateBindingWithParameteri
  *@author Ztiany
  * @see BaseUIFragment
  */
-abstract class BaseUIDialogFragment<VB : ViewBinding> : BaseDialogFragment(){
+abstract class BaseUIDialogFragment<VB : ViewBinding> : BaseDialogFragment() {
 
     private val reuseView by lazy { ReusableView() }
 
@@ -26,16 +26,16 @@ abstract class BaseUIDialogFragment<VB : ViewBinding> : BaseDialogFragment(){
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         val factory = {
-            _vb = provideViewBinding(inflater, savedInstanceState) ?: inflateBindingWithParameterizedType(layoutInflater, container, false)
+            _vb = provideViewBinding(inflater, container, savedInstanceState) ?: inflateBindingWithParameterizedType(layoutInflater, container, false)
             vb.root
         }
         return reuseView.createView(factory)
     }
 
-    protected open fun provideViewBinding(inflater: LayoutInflater, savedInstanceState: Bundle?): VB? = null
+    protected open fun provideViewBinding(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): VB? = null
 
     @CallSuper
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

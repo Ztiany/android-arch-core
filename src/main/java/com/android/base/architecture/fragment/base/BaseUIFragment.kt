@@ -10,7 +10,6 @@ import androidx.viewbinding.ViewBinding
 import com.android.base.architecture.fragment.animator.FragmentAnimatorHelper
 import com.android.base.architecture.fragment.tools.FragmentConfig
 import com.android.base.architecture.fragment.tools.ReusableView
-import com.android.base.architecture.ui.loading.LoadingViewHost
 import com.android.base.architecture.ui.viewbniding.inflateBindingWithParameterizedType
 
 /**
@@ -31,16 +30,16 @@ abstract class BaseUIFragment<VB : ViewBinding> : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         val factory = {
-            _vb = provideViewBinding(inflater, savedInstanceState) ?: inflateBindingWithParameterizedType(layoutInflater, container, false)
+            _vb = provideViewBinding(inflater, container, savedInstanceState) ?: inflateBindingWithParameterizedType(layoutInflater, container, false)
             vb.root
         }
         return reuseView.createView(factory)
     }
 
-    protected open fun provideViewBinding(inflater: LayoutInflater, savedInstanceState: Bundle?): VB? = null
+    protected open fun provideViewBinding(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): VB? = null
 
     @CallSuper
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -65,7 +65,7 @@ internal class DefaultEpoxyLoadMoreViewFactory : EpoxyLoadMoreViewFactory {
                     msgTv.visibility = View.VISIBLE
                     msgTv.text = noMoreMsg
                 } else {
-                    //Epoxy 的刷新是异步的，展示 loading 有延迟，所以直接俄展示 loading，也不会有哈问题。
+                    //Epoxy 的刷新是异步的，展示 loading 有延迟，所以直接展示 loading，也不会有什么问题。
                     onLoading()
                 }
             }

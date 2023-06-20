@@ -27,7 +27,7 @@ abstract class BaseEpoxyListDialogFragment<T, VB : ViewBinding> : BaseUIDialogFr
     }
 
     /**
-     *  1. This Method will be called before [onViewCreated] and [onViewPrepared].
+     *  1. This method will be called before [onViewCreated] and [onViewPrepared].
      *  2. You should invoke [setUpList] to return a real [ListLayoutHost].
      */
     abstract fun provideListImplementation(view: View, savedInstanceState: Bundle?): ListLayoutHost<T>

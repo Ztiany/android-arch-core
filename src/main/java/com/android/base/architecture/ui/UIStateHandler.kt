@@ -26,14 +26,21 @@ class ResourceHandlerBuilder<L, D, E> {
 
     internal var onLoading: ((step: L?) -> Unit)? = null
     internal var onLoadingEnd: (() -> Unit)? = null
+    internal var onIdle: (() -> Unit)? = null
+
     internal var onError: ((error: Throwable, reason: E?) -> Unit)? = null
     internal var onSuccess: ((D?) -> Unit)? = null
     internal var onData: ((D) -> Unit)? = null
     internal var onNoData: (() -> Unit)? = null
+
+    internal var onErrorState: ((error: Throwable, reason: E?) -> Unit)? = null
+    internal var onSuccessState: ((D?) -> Unit)? = null
+    internal var onDataState: ((D) -> Unit)? = null
+    internal var onNoDataState: (() -> Unit)? = null
+
     internal var loadingMessage: CharSequence = ""
     internal var showLoading: Boolean = true
     internal var forceLoading: Boolean = true
-    internal var clearAfterHanded: Boolean = true
 
     /** [onLoadingWithStep] will be called once state is [Loading]. */
     fun onLoadingWithStep(onLoading: ((step: L?) -> Unit)? = null) {
@@ -52,29 +59,54 @@ class ResourceHandlerBuilder<L, D, E> {
         this.onLoadingEnd = onLoadingEnd
     }
 
-    /** [onError] will be called once [State] is [Error]. */
-    fun onError(onError: ((error: Throwable) -> Unit)? = null) {
-        onErrorWithReason { error, _ -> onError?.invoke(error) }
+    /** [onErrorEvent] will be called when [State] is [Error] and is not handled. */
+    fun onError(onErrorEvent: ((error: Throwable) -> Unit)? = null) {
+        onErrorWithReason { error, _ -> onErrorEvent?.invoke(error) }
     }
 
-    /** [onErrorWithReason] will be called once [State] is [Error]. */
-    fun onErrorWithReason(onError: ((error: Throwable, reason: E?) -> Unit)? = null) {
-        this.onError = onError
+    /** [onErrorEventWithReason] will be called when [State] is [Error] and is not handled. */
+    fun onErrorWithReason(onErrorEventWithReason: ((error: Throwable, reason: E?) -> Unit)? = null) {
+        this.onError = onErrorEventWithReason
     }
 
-    /** [onSuccess] will always be called once [State] is [Success]. */
-    fun onSuccess(onSuccess: ((D?) -> Unit)? = null) {
-        this.onSuccess = onSuccess
+    /** [onErrorState] will be called once [State] is [Error]. */
+    fun onErrorState(onErrorState: ((error: Throwable) -> Unit)? = null) {
+        onErrorStateWithReason { error, _ -> onErrorState?.invoke(error) }
     }
 
-    /** [onData] will be called only when [State] is [Data]. */
-    fun onData(onData: ((D) -> Unit)? = null) {
-        this.onData = onData
+    /** [onErrorStateWithReason] will be called once [State] is [Error]. */
+    fun onErrorStateWithReason(onErrorStateWithReason: ((error: Throwable, reason: E?) -> Unit)? = null) {
+        this.onErrorState = onErrorStateWithReason
     }
 
-    /** [onNoData] will be called only when [State] is [NoData]. */
-    fun onNoData(onNoData: (() -> Unit)? = null) {
-        this.onNoData = onNoData
+    /** [onSuccessEvent] will always be called once [State] is [Success]. */
+    fun onSuccess(onSuccessEvent: ((D?) -> Unit)? = null) {
+        this.onSuccess = onSuccessEvent
+    }
+
+    /** [onDataEvent] will be called only when [State] is [Data]. */
+    fun onData(onDataEvent: ((D) -> Unit)? = null) {
+        this.onData = onDataEvent
+    }
+
+    /** [onNoDataEvent] will be called only when [State] is [NoData]. */
+    fun onNoData(onNoDataEvent: (() -> Unit)? = null) {
+        this.onNoData = onNoDataEvent
+    }
+
+    /** [onSuccessState] will always be called when [State] is [Success] and is not handled.. */
+    fun onSuccessState(onSuccessState: ((D?) -> Unit)? = null) {
+        this.onSuccess = onSuccessState
+    }
+
+    /** [onDataState] will be called only when [State] is [Data] and is not handled. */
+    fun onDataState(onDataState: ((D) -> Unit)? = null) {
+        this.onData = onDataState
+    }
+
+    /** [onNoDataState] will be called only when [State] is [NoData] and is not handled. */
+    fun onNoDataState(onNoDataState: (() -> Unit)? = null) {
+        this.onNoData = onNoDataState
     }
 
     /** when [State] is [Loading], what to show on the loading dialog. */
@@ -92,10 +124,6 @@ class ResourceHandlerBuilder<L, D, E> {
         this.forceLoading = true
     }
 
-    /** mark the event handled so that it will not be handled again. refer to [ViewModel One-off event antipatterns](https://manuelvivo.dev/viewmodel-events-antipatterns) for more details. */
-    fun clearAfterHanded() {
-        this.clearAfterHanded = true
-    }
 
 }
 
@@ -180,6 +208,10 @@ private fun <H, L, D, E> H.handleResourceInternal(
 ) where H : LoadingViewHost, H : LifecycleOwner {
 
     when (state) {
+        is Idle -> {
+            handlerBuilder.onIdle?.invoke()
+        }
+
         //----------------------------------------loading start
         // The loading state should always be handled, so we ignore the clearAfterHanded config here.
         is Loading -> {
@@ -195,52 +227,52 @@ private fun <H, L, D, E> H.handleResourceInternal(
 
         //----------------------------------------error start
         is Error -> {
-            if (state.isHandled) {
-                handlerBuilder.onLoadingEnd?.invoke()
-                return
-            }
-            if (handlerBuilder.clearAfterHanded) {
-                state.markAsHandled()
-            }
 
             dismissLoadingDialogDelayed {
                 handlerBuilder.onLoadingEnd?.invoke()
-                val onError = handlerBuilder.onError
-                if (onError != null) {
-                    onError(state.error, state.reason)
+
+                if (handlerBuilder.onError != null || handlerBuilder.onErrorState != null) {
+                    if (!state.isHandled) {
+                        handlerBuilder.onError?.invoke(state.error, state.reason)
+                    }
+                    handlerBuilder.onErrorState?.invoke(state.error, state.reason)
                 } else {
                     showMessage(AndroidSword.errorConvert.convert(state.error))
                 }
+
+                state.markAsHandled()
             }
         }
         //----------------------------------------error end
 
         //----------------------------------------success start
         is Success<D> -> {
-            if (state.isHandled) {
-                handlerBuilder.onLoadingEnd?.invoke()
-                return
-            }
-            if (handlerBuilder.clearAfterHanded) {
-                state.markAsHandled()
-            }
-
             dismissLoadingDialogDelayed {
                 handlerBuilder.onLoadingEnd?.invoke()
-                when (state) {
-                    is NoData -> {
-                        handlerBuilder.onSuccess?.invoke(null)
-                        handlerBuilder.onNoData?.invoke()
-                    }
-
-                    is Data<D> -> {
-                        handlerBuilder.onSuccess?.invoke(state.value)
-                        handlerBuilder.onData?.invoke(state.value)
-                    }
-                }
+                processOnSuccess(state, handlerBuilder.onSuccess, handlerBuilder.onData, handlerBuilder.onNoData, true)
+                processOnSuccess(state, handlerBuilder.onSuccessState, handlerBuilder.onDataState, handlerBuilder.onNoDataState, false)
+                state.markAsHandled()
             }
         }
         //----------------------------------------success end
 
+    }
+}
+
+
+private fun <D> processOnSuccess(state: Success<D>, onSuccess: ((D?) -> Unit)?, onData: ((D) -> Unit)?, onNoData: (() -> Unit)?, asEvent: Boolean) {
+    if (asEvent && state.isHandled) {
+        return
+    }
+    when (state) {
+        is NoData -> {
+            onSuccess?.invoke(null)
+            onNoData?.invoke()
+        }
+
+        is Data<D> -> {
+            onSuccess?.invoke(state.value)
+            onData?.invoke(state.value)
+        }
     }
 }
