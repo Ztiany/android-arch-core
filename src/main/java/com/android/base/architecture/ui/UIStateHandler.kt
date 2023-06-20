@@ -59,12 +59,12 @@ class ResourceHandlerBuilder<L, D, E> {
         this.onLoadingEnd = onLoadingEnd
     }
 
-    /** [onErrorEvent] will be called when [State] is [Error] and is not handled. */
+    /** [onError] will be called when [State] is [Error] and is not handled. It behaves like an event. */
     fun onError(onErrorEvent: ((error: Throwable) -> Unit)? = null) {
         onErrorWithReason { error, _ -> onErrorEvent?.invoke(error) }
     }
 
-    /** [onErrorEventWithReason] will be called when [State] is [Error] and is not handled. */
+    /** [onErrorEventWithReason] will be called when [State] is [Error] and is not handled. It behaves like an event. */
     fun onErrorWithReason(onErrorEventWithReason: ((error: Throwable, reason: E?) -> Unit)? = null) {
         this.onError = onErrorEventWithReason
     }
@@ -79,32 +79,32 @@ class ResourceHandlerBuilder<L, D, E> {
         this.onErrorState = onErrorStateWithReason
     }
 
-    /** [onSuccessEvent] will always be called once [State] is [Success]. */
+    /** [onSuccess] will always be called when [State] is [Success] and is not handled. It behaves like an event. */
     fun onSuccess(onSuccessEvent: ((D?) -> Unit)? = null) {
         this.onSuccess = onSuccessEvent
     }
 
-    /** [onDataEvent] will be called only when [State] is [Data]. */
+    /** [onData] will be called only when [State] is [Data] and is not handled. It behaves like an event. It behaves like an event. */
     fun onData(onDataEvent: ((D) -> Unit)? = null) {
         this.onData = onDataEvent
     }
 
-    /** [onNoDataEvent] will be called only when [State] is [NoData]. */
+    /** [onNoData] will be called only when [State] is [NoData] and is not handled. It behaves like an event. */
     fun onNoData(onNoDataEvent: (() -> Unit)? = null) {
         this.onNoData = onNoDataEvent
     }
 
-    /** [onSuccessState] will always be called when [State] is [Success] and is not handled.. */
+    /** [onSuccessState] will always be called once [State] is [Success]. */
     fun onSuccessState(onSuccessState: ((D?) -> Unit)? = null) {
         this.onSuccess = onSuccessState
     }
 
-    /** [onDataState] will be called only when [State] is [Data] and is not handled. */
+    /** [onDataState] will be called only when [State] is [Data]. */
     fun onDataState(onDataState: ((D) -> Unit)? = null) {
         this.onData = onDataState
     }
 
-    /** [onNoDataState] will be called only when [State] is [NoData] and is not handled. */
+    /** [onDataState] will be called only when [State] is [NoData]. */
     fun onNoDataState(onNoDataState: (() -> Unit)? = null) {
         this.onNoData = onNoDataState
     }
@@ -123,7 +123,6 @@ class ResourceHandlerBuilder<L, D, E> {
     fun forceLoading() {
         this.forceLoading = true
     }
-
 
 }
 
