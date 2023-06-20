@@ -3,7 +3,10 @@ package com.android.base.architecture.ui
 import android.app.Activity
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
@@ -15,14 +18,14 @@ import kotlinx.coroutines.launch
  *
  * Notes: call the method in [Activity.onCreate].
  *
- * @see [collectFlowRepeatOnViewLifecycle]
+ * @see [collectFlowRepeatedlyOnViewLifecycle]
  */
-fun <T> LifecycleOwner.collectFlowRepeatOnLifecycle(
+fun <T> LifecycleOwner.collectFlowRepeatedlyOnLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
     data: Flow<T>,
-    onResult: suspend (result: T) -> Unit
+    onResult: suspend (result: T) -> Unit,
 ) {
-    runRepeatOnLifecycle(activeState) {
+    runRepeatedlyOnLifecycle(activeState) {
         data.onEach {
             onResult(it)
         }.launchIn(this)
@@ -30,18 +33,18 @@ fun <T> LifecycleOwner.collectFlowRepeatOnLifecycle(
 }
 
 /**
- *  Fragments should **always** use the [Fragment.getViewLifecycleOwner] to trigger UI updates. However, that’s not the case for [DialogFragment]s which might not have a `View` sometimes. For [DialogFragment]s, you can use the [LifecycleOwner].
+ *  A quote from [A safer way to collect flows from Android UIs](https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda):
  *
- *  Notes: call the method in [Fragment.onViewCreated].
+ *  > For avoiding wasting resources, [Fragment]s should **always** use the [Fragment.getViewLifecycleOwner] to trigger UI updates. However, that’s not the case for [DialogFragment]s which might not have a `View` sometimes. For [DialogFragment]s, you can use the [LifecycleOwner].
  *
- *  Refer to [A safer way to collect flows from Android UIs](https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda) for details.
+ *  Notes: [Fragment.getViewLifecycleOwner]  is available in the calling of [Fragment.onViewCreated].
  */
-fun <T> Fragment.collectFlowRepeatOnViewLifecycle(
+fun <T> Fragment.collectFlowRepeatedlyOnViewLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
     data: Flow<T>,
-    onResult: suspend (result: T) -> Unit
+    onResult: suspend (result: T) -> Unit,
 ) {
-    runRepeatOnViewLifecycle(activeState) {
+    runRepeatedlyOnViewLifecycle(activeState) {
         data.onEach {
             onResult(it)
         }.launchIn(this)
@@ -49,9 +52,9 @@ fun <T> Fragment.collectFlowRepeatOnViewLifecycle(
 }
 
 /** A extension method to call repeatOnLifecycle on lifecycleScope. */
-fun LifecycleOwner.runRepeatOnLifecycle(
+fun LifecycleOwner.runRepeatedlyOnLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
-    block: suspend CoroutineScope.() -> Unit
+    block: suspend CoroutineScope.() -> Unit,
 ) {
     lifecycleScope.launch {
         repeatOnLifecycle(activeState) {
@@ -65,9 +68,9 @@ fun LifecycleOwner.runRepeatOnLifecycle(
  *
  *  Notes: call the method in [Fragment.onViewCreated].
  */
-fun Fragment.runRepeatOnViewLifecycle(
+fun Fragment.runRepeatedlyOnViewLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
-    block: suspend CoroutineScope.() -> Unit
+    block: suspend CoroutineScope.() -> Unit,
 ) {
     viewLifecycleOwner.lifecycleScope.launch {
         repeatOnLifecycle(activeState) {

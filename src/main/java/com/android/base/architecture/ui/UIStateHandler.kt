@@ -172,7 +172,10 @@ fun <H, L, D, E> H.handleFlowWithLifecycle(
     }
 }
 
-/** refers to [handleLiveData] for details. Notes：You should call this method in [Fragment.onViewCreated]. */
+/**
+ * refers to [handleLiveData] for details. Notes：You should call this method in [Fragment.onViewCreated]. for more details about
+ * how to collect flow from UI Layer, refers to [collectFlowRepeatedlyOnViewLifecycle].
+ */
 fun <H, L, D, E> H.handleFlowWithViewLifecycle(
     activeState: Lifecycle.State = Lifecycle.State.STARTED,
     data: Flow<State<L, D, E>>,
