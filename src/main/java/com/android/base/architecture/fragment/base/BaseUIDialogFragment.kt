@@ -40,19 +40,23 @@ abstract class BaseUIDialogFragment<VB : ViewBinding> : BaseDialogFragment() {
     @CallSuper
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         if (reuseView.isNotTheSameView(view)) {
-            internalOnViewPrepared(view, savedInstanceState)
-            onViewPrepared(view, savedInstanceState)
+            internalOnSetUpCreatedView(view, savedInstanceState)
+            onSetUpCreatedView(view, savedInstanceState)
         }
         super.onViewCreated(view, savedInstanceState)
+        onViewPrepared(view, savedInstanceState)
     }
 
-    internal open fun internalOnViewPrepared(view: View, savedInstanceState: Bundle?) {}
+    internal open fun internalOnSetUpCreatedView(view: View, savedInstanceState: Bundle?) {}
 
     /**
      * Called when the view is prepared. If [setReuseView] is called and passes true as the parameter, it will be called just once.
      *
-     * @param view view of fragment
+     * @param view view of fragment.
      */
+    protected open fun onSetUpCreatedView(view: View, savedInstanceState: Bundle?) {}
+
+    /** Called when after [onSetUpCreatedView] is called. */
     protected open fun onViewPrepared(view: View, savedInstanceState: Bundle?) {}
 
     /**

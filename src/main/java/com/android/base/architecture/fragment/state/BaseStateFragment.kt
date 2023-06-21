@@ -28,7 +28,7 @@ abstract class BaseStateFragment<VB : ViewBinding> : BaseUIFragment<VB>(), State
 
     private lateinit var stateLayoutHostImpl: StateLayoutHost
 
-    override fun internalOnViewPrepared(view: View, savedInstanceState: Bundle?) {
+    override fun internalOnSetUpCreatedView(view: View, savedInstanceState: Bundle?) {
         stateLayoutHostImpl = buildStateLayoutHost(
             view.findViewById(CommonId.STATE_ID),
             view.findViewById(CommonId.REFRESH_ID)

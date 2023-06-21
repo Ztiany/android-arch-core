@@ -1,7 +1,14 @@
 package com.android.base.architecture.fragment.list
 
 import android.view.View
-import com.android.base.architecture.ui.list.*
+import com.android.base.AndroidSword
+import com.android.base.architecture.ui.list.AutoPaging
+import com.android.base.architecture.ui.list.ListDataHost
+import com.android.base.architecture.ui.list.ListLayoutHost
+import com.android.base.architecture.ui.list.PagerSize
+import com.android.base.architecture.ui.list.Paging
+import com.android.base.architecture.ui.list.RefreshView
+import com.android.base.architecture.ui.list.RefreshViewFactory
 import com.android.base.architecture.ui.state.OnRetryActionListener
 import com.android.base.architecture.ui.state.StateLayout
 import com.android.base.architecture.ui.state.StateLayoutConfig
@@ -20,7 +27,7 @@ fun <T> buildListLayoutHost(
     loadMoreController: LoadMoreController?,
     stateLayout: View,
     refreshLayout: View? = null,
-    config: ListLayoutHostConfig.() -> Unit
+    config: ListLayoutHostConfig.() -> Unit,
 ): ListLayoutHost<T> {
 
     val stateLayoutImpl = (stateLayout as? StateLayout) ?: throw IllegalStateException("Make sure that stateLayout implements StateLayout.")
@@ -39,7 +46,7 @@ fun <T> buildListLayoutHost(
         }
 
         override fun canRefresh(): Boolean {
-            return if (loadMoreController != null) {
+            return if (loadMoreController != null && AndroidSword.avoidingRefreshLoadMoreConflict) {
                 !loadMoreController.isLoadingMore
             } else true
         }
@@ -58,8 +65,8 @@ fun <T> buildListLayoutHost(
             hostConfig.onLoadMore?.invoke()
         }
 
-        override fun canLoadMore() = if (refreshLayoutImpl != null) {
-            !refreshLayoutImpl.isRefreshing && enableLoadMore
+        override fun canLoadMore() = if (refreshLayoutImpl != null && AndroidSword.avoidingRefreshLoadMoreConflict) {
+            enableLoadMore && !refreshLayoutImpl.isRefreshing
         } else {
             enableLoadMore
         }

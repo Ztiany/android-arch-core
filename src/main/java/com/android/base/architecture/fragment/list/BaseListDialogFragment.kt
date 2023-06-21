@@ -26,13 +26,13 @@ abstract class BaseListDialogFragment<T, VB : ViewBinding> : BaseUIDialogFragmen
 
     private var listLayoutHostImpl: ListLayoutHost<T> by Delegates.notNull()
 
-    override fun internalOnViewPrepared(view: View, savedInstanceState: Bundle?) {
-        super.internalOnViewPrepared(view, savedInstanceState)
+    override fun internalOnSetUpCreatedView(view: View, savedInstanceState: Bundle?) {
+        super.internalOnSetUpCreatedView(view, savedInstanceState)
         listLayoutHostImpl = provideListImplementation(view, savedInstanceState)
     }
 
     /**
-     *  1. This method will be called before [onViewCreated] and [onViewPrepared].
+     *  1. This method will be called before [onViewCreated] and [onSetUpCreatedView].
      *  2. You should invoke [setUpList] to return a real [ListLayoutHost].
      */
     abstract fun provideListImplementation(view: View, savedInstanceState: Bundle?): ListLayoutHost<T>
@@ -56,14 +56,13 @@ abstract class BaseListDialogFragment<T, VB : ViewBinding> : BaseUIDialogFragmen
             vb.root.findViewById(CommonId.STATE_ID),
             vb.root.findViewById(CommonId.REFRESH_ID)
         ) {
-
-            this.onRetry = {
+            onRetry = {
                 this@BaseListDialogFragment.onRetry(it)
             }
-            this.onRefresh = {
+            onRefresh = {
                 this@BaseListDialogFragment.onRefresh()
             }
-            this.onLoadMore = {
+            onLoadMore = {
                 this@BaseListDialogFragment.onLoadMore()
             }
         }

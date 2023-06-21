@@ -109,6 +109,11 @@ object AndroidSword {
     /** 加载更多触发的方式，默认为 LoadMore Item 被 bind 时。*/
     var loadMoreTriggerByScroll: Boolean = false
 
+    /**
+     * 是否在刷新时禁用加载更多，默认为 true。同时也会在加载更多时禁用刷新，如果将其置为 false，需要在触发加载更多时取消掉刷新，以及在刷新时取消掉加载更多。
+     */
+    var avoidingRefreshLoadMoreConflict: Boolean = true
+
     /** 加载更多的方式，默认为滑动到底部时自动加载更多。*/
     @LoadMode var loadMoreMode: Int
         get() = LoadMoreConfig.getLoadMode()

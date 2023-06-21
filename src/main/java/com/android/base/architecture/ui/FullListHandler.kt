@@ -9,6 +9,15 @@ import com.android.base.foundation.data.NoData
 import com.android.base.foundation.data.State
 import com.android.base.foundation.data.Success
 
+/*
+TODO: 1 StateLayoutHost 添加一个方法，setRefreshing(boolean)。
+TODO: 2 ListLayoutHost 添加一个方法，setLoadingMore(boolean)。
+TODO: 3 为列表加载建模，实现 ListState<T>。
+TODO: 4 重构 FullListHandler.kt，使用 ListState<T>。
+ */
+class ListState<T> {
+
+}
 
 //TODO: refactor this to DSL style.
 fun <L, D, E> ListLayoutHost<D>.submitListResource(
