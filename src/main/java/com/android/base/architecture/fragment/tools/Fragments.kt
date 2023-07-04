@@ -4,18 +4,16 @@ package com.android.base.architecture.fragment.tools
 
 
 import android.view.View
-import androidx.annotation.NonNull
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
+import com.android.base.delegate.State
 import com.android.base.delegate.activity.ActivityDelegate
 import com.android.base.delegate.activity.ActivityDelegateOwner
-import com.android.base.delegate.activity.ActivityState
 import com.android.base.delegate.fragment.FragmentDelegate
 import com.android.base.delegate.fragment.FragmentDelegateOwner
-import kotlin.reflect.KClass
 
 /* =========================================================================================================================== */
 /* There are some practical methods in this file for you to operate [Fragment]s. But definitely, Jetpack Navigator or Jetpack Compose is a better choice if you have included one of them. */
@@ -89,10 +87,10 @@ fun <T> Fragment.requireParentImplement(clazz: Class<T>): T? {
     }
 }
 
-/** 使用 [clazz] 的全限定类名作为 tag 查找 Fragment */
-fun <T : Fragment> FragmentManager.findFragmentByTag(clazz: KClass<T>): T? {
-    @Suppress("UNCHECKED_CAST")
-    return findFragmentByTag(clazz.java.name) as? T
+/** 使用 [T] 的全限定类名作为 tag 查找 Fragment */
+@UsingFragmentClassNameAsFlag
+inline fun <reified T : Fragment> FragmentManager.findFragmentByTag(): T? {
+    return findFragmentByTag(T::class.qualifiedName) as? T
 }
 
 /**
@@ -163,7 +161,7 @@ fun FragmentManager.isFragmentInStack(clazz: Class<out Fragment>): Boolean {
 
 inline fun FragmentManager.commit(
     allowStateLoss: Boolean = false,
-    func: EnhanceFragmentTransaction.() -> Unit
+    func: EnhanceFragmentTransaction.() -> Unit,
 ) {
     val fragmentTransaction = beginTransaction()
     EnhanceFragmentTransaction(this, fragmentTransaction).func()
@@ -176,7 +174,7 @@ inline fun FragmentManager.commit(
 
 inline fun FragmentManager.commitNow(
     allowStateLoss: Boolean = false,
-    func: EnhanceFragmentTransaction.() -> Unit
+    func: EnhanceFragmentTransaction.() -> Unit,
 ) {
     val fragmentTransaction = beginTransaction()
     EnhanceFragmentTransaction(this, fragmentTransaction).func()
@@ -189,7 +187,7 @@ inline fun FragmentManager.commitNow(
 
 inline fun FragmentActivity.doFragmentTransaction(
     allowStateLoss: Boolean = false,
-    func: EnhanceFragmentTransaction.() -> Unit
+    func: EnhanceFragmentTransaction.() -> Unit,
 ) {
     val transaction = supportFragmentManager.beginTransaction()
     EnhanceFragmentTransaction(supportFragmentManager, transaction).func()
@@ -202,7 +200,7 @@ inline fun FragmentActivity.doFragmentTransaction(
 
 inline fun FragmentActivity.doFragmentTransactionNow(
     allowStateLoss: Boolean = false,
-    func: EnhanceFragmentTransaction.() -> Unit
+    func: EnhanceFragmentTransaction.() -> Unit,
 ) {
     val transaction = supportFragmentManager.beginTransaction()
     EnhanceFragmentTransaction(supportFragmentManager, transaction).func()
@@ -214,20 +212,20 @@ inline fun FragmentActivity.doFragmentTransactionNow(
 }
 
 fun <T> T.doFragmentTransactionSafely(
-    func: EnhanceFragmentTransaction.() -> Unit
+    func: EnhanceFragmentTransaction.() -> Unit,
 ): Boolean where T : FragmentActivity, T : ActivityDelegateOwner {
     return internalCommitNowSafely(func, false)
 }
 
 fun <T> T.doFragmentTransactionNowSafely(
-    func: EnhanceFragmentTransaction.() -> Unit
+    func: EnhanceFragmentTransaction.() -> Unit,
 ): Boolean where T : FragmentActivity, T : ActivityDelegateOwner {
     return internalCommitNowSafely(func, true)
 }
 
 private fun <T> T.internalCommitNowSafely(
     func: EnhanceFragmentTransaction.() -> Unit,
-    now: Boolean
+    now: Boolean,
 ): Boolean where T : FragmentActivity, T : ActivityDelegateOwner {
 
     var delegate = findDelegate {
@@ -248,7 +246,7 @@ private fun <T> T.internalCommitNowSafely(
 
 inline fun Fragment.doFragmentTransaction(
     allowStateLoss: Boolean = false,
-    func: EnhanceFragmentTransaction.() -> Unit
+    func: EnhanceFragmentTransaction.() -> Unit,
 ) {
     val transaction = childFragmentManager.beginTransaction()
     EnhanceFragmentTransaction(childFragmentManager, transaction).func()
@@ -261,7 +259,7 @@ inline fun Fragment.doFragmentTransaction(
 
 inline fun Fragment.doFragmentTransactionNow(
     allowStateLoss: Boolean = false,
-    func: EnhanceFragmentTransaction.() -> Unit
+    func: EnhanceFragmentTransaction.() -> Unit,
 ) {
     val transaction = childFragmentManager.beginTransaction()
     EnhanceFragmentTransaction(childFragmentManager, transaction).func()
@@ -286,7 +284,7 @@ fun <T> T.doFragmentTransactionNowSafely(
 
 fun <T> T.internalCommitNowSafely(
     func: EnhanceFragmentTransaction.() -> Unit,
-    now: Boolean
+    now: Boolean,
 ): Boolean where T : Fragment, T : FragmentDelegateOwner {
 
     var delegate: SafelyFragmentTransactionFragmentDelegate? = findDelegate {
@@ -306,19 +304,17 @@ fun <T> T.internalCommitNowSafely(
 }
 
 private class SafelyFragmentTransactionActivityDelegate(
-    private val commitNow: Boolean
+    private val commitNow: Boolean,
 ) : ActivityDelegate<FragmentActivity> {
 
     private val mPendingTransactions = mutableListOf<FragmentTransaction>()
 
     fun safeCommit(
-        @NonNull activityDelegateOwner: ActivityDelegateOwner,
-        @NonNull transaction: FragmentTransaction
+        activityDelegateOwner: ActivityDelegateOwner,
+        transaction: FragmentTransaction,
     ): Boolean {
-        val status = activityDelegateOwner.getStatus()
-        val isCommitterResumed =
-            (status == ActivityState.CREATE || status == ActivityState.START || status == ActivityState.RESUME)
-
+        val status = activityDelegateOwner.getCurrentState()
+        val isCommitterResumed = (status == State.CREATE || status == State.START || status == State.RESUME)
         return if (isCommitterResumed) {
             if (commitNow) {
                 transaction.commitNow()
@@ -342,14 +338,14 @@ private class SafelyFragmentTransactionActivityDelegate(
 }
 
 private class SafelyFragmentTransactionFragmentDelegate(
-    private val commitNow: Boolean
+    private val commitNow: Boolean,
 ) : FragmentDelegate<Fragment> {
 
     private val pendingTransactions = mutableListOf<FragmentTransaction>()
 
     fun safeCommit(
-        @NonNull fragment: Fragment,
-        @NonNull transaction: FragmentTransaction
+        fragment: Fragment,
+        transaction: FragmentTransaction,
     ): Boolean {
         return if (fragment.isResumed) {
             if (commitNow) {
@@ -375,7 +371,7 @@ private class SafelyFragmentTransactionFragmentDelegate(
 
 class EnhanceFragmentTransaction constructor(
     private val fragmentManager: FragmentManager,
-    private val fragmentTransaction: FragmentTransaction
+    private val fragmentTransaction: FragmentTransaction,
 ) : FragmentTransaction() {
 
     //------------------------------------------------------------------------------------------------
@@ -391,7 +387,7 @@ class EnhanceFragmentTransaction constructor(
         containerId: Int = 0,
         fragment: Fragment,
         tag: String = fragment::class.java.name,
-        transition: Boolean = true
+        transition: Boolean = true,
     ): EnhanceFragmentTransaction {
         //set add to stack
         addToBackStack(tag)
@@ -416,7 +412,7 @@ class EnhanceFragmentTransaction constructor(
         containerId: Int = 0,
         fragment: Fragment,
         tag: String = fragment::class.java.name,
-        transition: Boolean = true
+        transition: Boolean = true,
     ): EnhanceFragmentTransaction {
         //set add to stack
         addToBackStack(tag)
@@ -442,7 +438,7 @@ class EnhanceFragmentTransaction constructor(
      */
     fun addFragment(
         fragment: Fragment,
-        tag: String = fragment::class.java.name
+        tag: String = fragment::class.java.name,
     ): FragmentTransaction {
         return fragmentTransaction.add(FragmentConfig.defaultContainerId(), fragment, tag)
     }
@@ -453,7 +449,7 @@ class EnhanceFragmentTransaction constructor(
     fun replaceFragment(
         fragment: Fragment,
         tag: String = fragment::class.java.name,
-        transition: Boolean = true
+        transition: Boolean = true,
     ): FragmentTransaction {
         if (transition) {
             setOpeningTransition()
@@ -535,7 +531,7 @@ class EnhanceFragmentTransaction constructor(
     override fun replace(
         containerViewId: Int,
         fragment: Fragment,
-        tag: String?
+        tag: String?,
     ): FragmentTransaction {
         return fragmentTransaction.replace(containerViewId, fragment, tag)
     }
@@ -557,7 +553,7 @@ class EnhanceFragmentTransaction constructor(
         enter: Int,
         exit: Int,
         popEnter: Int,
-        popExit: Int
+        popExit: Int,
     ): FragmentTransaction {
         return fragmentTransaction.setCustomAnimations(enter, exit, popEnter, popExit)
     }

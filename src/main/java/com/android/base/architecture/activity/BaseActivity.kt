@@ -8,9 +8,9 @@ import android.view.View
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.android.base.delegate.State
 import com.android.base.delegate.activity.ActivityDelegate
 import com.android.base.delegate.activity.ActivityDelegateOwner
-import com.android.base.delegate.activity.ActivityState
 import com.android.base.delegate.helper.ActivityDelegates
 import timber.log.Timber
 
@@ -25,8 +25,6 @@ import timber.log.Timber
 abstract class BaseActivity : AppCompatActivity(), ActivityDelegateOwner {
 
     private val activityDelegates by lazy { ActivityDelegates(this) }
-
-    private var activityState = ActivityState.INITIALIZED
 
     private fun tag() = this.javaClass.simpleName
 
@@ -44,7 +42,6 @@ abstract class BaseActivity : AppCompatActivity(), ActivityDelegateOwner {
             else -> throw IllegalArgumentException("layout() return type no support, layout = $layout")
         }
 
-        activityState = ActivityState.CREATE
         activityDelegates.callOnCreateAfterSetContentView(savedInstanceState)
         setUpLayout(savedInstanceState)
     }
@@ -60,7 +57,6 @@ abstract class BaseActivity : AppCompatActivity(), ActivityDelegateOwner {
         Timber.tag(tag()).d("---->onStart before call super")
         super.onStart()
         Timber.tag(tag()).d("---->onStart after call super")
-        activityState = ActivityState.START
         activityDelegates.callOnStart()
     }
 
@@ -68,13 +64,11 @@ abstract class BaseActivity : AppCompatActivity(), ActivityDelegateOwner {
         Timber.tag(tag()).d("---->onResume before call super")
         super.onResume()
         Timber.tag(tag()).d("---->onResume after call super")
-        activityState = ActivityState.RESUME
         activityDelegates.callOnResume()
     }
 
     override fun onPause() {
         Timber.tag(tag()).d("---->onPause before call super")
-        activityState = ActivityState.PAUSE
         activityDelegates.callOnPause()
         super.onPause()
         Timber.tag(tag()).d("---->onPause after call super  ")
@@ -82,7 +76,6 @@ abstract class BaseActivity : AppCompatActivity(), ActivityDelegateOwner {
 
     override fun onStop() {
         Timber.tag(tag()).d("---->onStop before call super")
-        activityState = ActivityState.STOP
         activityDelegates.callOnStop()
         super.onStop()
         Timber.tag(tag()).d("---->onStop after call super")
@@ -90,7 +83,6 @@ abstract class BaseActivity : AppCompatActivity(), ActivityDelegateOwner {
 
     override fun onDestroy() {
         Timber.tag(tag()).d("---->onDestroy before call super")
-        activityState = ActivityState.DESTROY
         activityDelegates.callOnDestroy()
         super.onDestroy()
         Timber.tag(tag()).d("---->onDestroy after call super")
@@ -111,6 +103,7 @@ abstract class BaseActivity : AppCompatActivity(), ActivityDelegateOwner {
         activityDelegates.callOnRestoreInstanceState(savedInstanceState)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         activityDelegates.callOnActivityResult(requestCode, resultCode, data)
@@ -119,7 +112,7 @@ abstract class BaseActivity : AppCompatActivity(), ActivityDelegateOwner {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         activityDelegates.callOnRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -135,12 +128,17 @@ abstract class BaseActivity : AppCompatActivity(), ActivityDelegateOwner {
     ///////////////////////////////////////////////////////////////////////////
     @UiThread
     final override fun addDelegate(activityDelegate: ActivityDelegate<*>) {
-        activityDelegates.addActivityDelegate(activityDelegate)
+        activityDelegates.addDelegate(activityDelegate)
     }
 
     @UiThread
     final override fun removeDelegate(activityDelegate: ActivityDelegate<*>): Boolean {
-        return activityDelegates.removeActivityDelegate(activityDelegate)
+        return activityDelegates.removeDelegate(activityDelegate)
+    }
+
+    @UiThread
+    override fun removeDelegateWhile(predicate: (ActivityDelegate<*>) -> Boolean) {
+        activityDelegates.removeDelegateWhile(predicate)
     }
 
     @UiThread
@@ -148,8 +146,8 @@ abstract class BaseActivity : AppCompatActivity(), ActivityDelegateOwner {
         return activityDelegates.findDelegate(predicate)
     }
 
-    override fun getStatus(): ActivityState {
-        return activityState
+    override fun getCurrentState(): State {
+        return activityDelegates.getCurrentState()
     }
 
     /**
@@ -171,8 +169,9 @@ abstract class BaseActivity : AppCompatActivity(), ActivityDelegateOwner {
      */
     protected abstract fun setUpLayout(savedInstanceState: Bundle?)
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (BackHandlerHelper.handleBackPress(this)) {
+        if (activityHandleBackPress(this)) {
             Timber.d("onBackPressed() called but child fragment handle it")
         } else {
             superOnBackPressed()
@@ -188,7 +187,7 @@ abstract class BaseActivity : AppCompatActivity(), ActivityDelegateOwner {
         return if (Build.VERSION.SDK_INT >= 17) {
             super.isDestroyed()
         } else {
-            activityState === ActivityState.DESTROY
+            getCurrentState() === State.DESTROY
         }
     }
 

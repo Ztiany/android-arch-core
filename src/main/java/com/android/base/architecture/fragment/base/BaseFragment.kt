@@ -11,10 +11,11 @@ import androidx.annotation.StringRes
 import androidx.annotation.UiThread
 import androidx.fragment.app.Fragment
 import com.android.base.AndroidSword
-import com.android.base.architecture.activity.BackHandlerHelper
 import com.android.base.architecture.activity.OnBackPressListener
+import com.android.base.architecture.activity.fragmentHandleBackPress
 import com.android.base.architecture.fragment.tools.dismissDialog
 import com.android.base.architecture.ui.loading.LoadingViewHost
+import com.android.base.delegate.State
 import com.android.base.delegate.fragment.FragmentDelegate
 import com.android.base.delegate.fragment.FragmentDelegateOwner
 import com.android.base.delegate.helper.FragmentDelegates
@@ -38,13 +39,13 @@ open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner
     override fun onAttach(context: Context) {
         super.onAttach(context)
         Timber.tag(tag()).d("onAttach() called with: context = [$context]")
-        fragmentDelegates.onAttach(context)
+        fragmentDelegates.callOnAttach(context)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Timber.tag(tag()).d("-->onCreate  savedInstanceState  =  $savedInstanceState")
-        fragmentDelegates.onCreate(savedInstanceState)
+        fragmentDelegates.callOnCreate(savedInstanceState)
     }
 
     override fun onCreateView(
@@ -59,61 +60,61 @@ open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Timber.tag(tag()).d("-->onViewCreated  savedInstanceState = %s", savedInstanceState)
-        fragmentDelegates.onViewCreated(view, savedInstanceState)
+        fragmentDelegates.callOnViewCreated(view, savedInstanceState)
     }
 
     @Deprecated("Deprecated in Java")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         Timber.tag(tag()).d("-->onActivityCreated savedInstanceState  =  $savedInstanceState")
-        fragmentDelegates.onActivityCreated(savedInstanceState)
+        fragmentDelegates.callOnActivityCreated(savedInstanceState)
     }
 
     override fun onStart() {
         super.onStart()
         Timber.tag(tag()).d("-->onStart")
-        fragmentDelegates.onStart()
+        fragmentDelegates.callOnStart()
     }
 
     override fun onResume() {
         super.onResume()
         Timber.tag(tag()).d("-->onResume")
-        fragmentDelegates.onResume()
+        fragmentDelegates.callOnResume()
     }
 
     override fun onPause() {
         Timber.tag(tag()).d("-->onPause")
-        fragmentDelegates.onPause()
+        fragmentDelegates.callOnPause()
         super.onPause()
     }
 
     override fun onStop() {
         Timber.tag(tag()).d("-->onStop")
-        fragmentDelegates.onStop()
+        fragmentDelegates.callOnStop()
         super.onStop()
     }
 
     override fun onDestroyView() {
         Timber.tag(tag()).d("-->onDestroyView")
-        fragmentDelegates.onDestroyView()
+        fragmentDelegates.callOnDestroyView()
         super.onDestroyView()
     }
 
     override fun onDestroy() {
         Timber.tag(tag()).d("-->onDestroy")
-        fragmentDelegates.onDestroy()
+        fragmentDelegates.callOnDestroy()
         dismissLoadingDialog()
         super.onDestroy()
     }
 
     override fun onDetach() {
         Timber.tag(tag()).d("-->onDetach")
-        fragmentDelegates.onDetach()
+        fragmentDelegates.callOnDetach()
         super.onDetach()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        fragmentDelegates.onSaveInstanceState(outState)
+        fragmentDelegates.callOnSaveInstanceState(outState)
         super.onSaveInstanceState(outState)
     }
 
@@ -121,13 +122,13 @@ open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
         super.setUserVisibleHint(isVisibleToUser)
         Timber.tag(tag()).d("-->setUserVisibleHint = $isVisibleToUser")
-        fragmentDelegates.setUserVisibleHint(isVisibleToUser)
+        fragmentDelegates.callSetUserVisibleHint(isVisibleToUser)
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         Timber.tag(tag()).d("-->onHiddenChanged = $hidden")
-        fragmentDelegates.onHiddenChanged(hidden)
+        fragmentDelegates.callOnHiddenChanged(hidden)
     }
 
     @Deprecated("Deprecated in Java")
@@ -137,13 +138,13 @@ open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner
         grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        fragmentDelegates.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        fragmentDelegates.callOnRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        fragmentDelegates.onActivityResult(requestCode, resultCode, data)
+        fragmentDelegates.callOnActivityResult(requestCode, resultCode, data)
     }
 
     @UiThread
@@ -157,12 +158,21 @@ open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner
     }
 
     @UiThread
+    override fun removeDelegateWhile(predicate: (FragmentDelegate<*>) -> Boolean) {
+        fragmentDelegates.removeDelegateWhile(predicate)
+    }
+
+    @UiThread
     override fun findDelegate(predicate: (FragmentDelegate<*>) -> Boolean): FragmentDelegate<*>? {
         return fragmentDelegates.findDelegate(predicate)
     }
 
+    override fun getCurrentState(): State {
+        return fragmentDelegates.getCurrentState()
+    }
+
     final override fun onBackPressed(): Boolean {
-        return handleBackPress() || BackHandlerHelper.handleBackPress(this)
+        return handleBackPress() || fragmentHandleBackPress(this)
     }
 
     /**
@@ -171,7 +181,6 @@ open class BaseFragment : Fragment(), OnBackPressListener, FragmentDelegateOwner
     protected open fun handleBackPress(): Boolean {
         return false
     }
-
 
     private fun loadingView(): LoadingViewHost {
         val loadingViewImpl = loadingViewHost
