@@ -1,4 +1,4 @@
-package com.android.base.architecture.app
+package com.android.base.app
 
 import android.annotation.SuppressLint
 import android.app.Application
@@ -7,7 +7,6 @@ import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Process
-import com.android.base.CrashProcessor
 import timber.log.Timber
 import java.io.File
 import java.io.PrintStream
@@ -20,11 +19,10 @@ import java.util.*
  * 全局异常处理。
  */
 internal class CrashHandler private constructor(
-    private val context: Context
+    private val context: Context,
 ) : UncaughtExceptionHandler {
 
     private var _crashProcessor: CrashProcessor? = null
-
     fun setCrashProcessor(crashProcessor: CrashProcessor) {
         _crashProcessor = crashProcessor
     }

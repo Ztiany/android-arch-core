@@ -1,9 +1,8 @@
-package com.android.base.architecture.app
+package com.android.base.app
 
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
-import com.android.base.CrashProcessor
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**

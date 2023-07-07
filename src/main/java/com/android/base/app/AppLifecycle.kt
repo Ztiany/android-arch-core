@@ -1,8 +1,8 @@
-package com.android.base.architecture.app
+package com.android.base.app
 
 import android.app.Application
 import android.content.res.Configuration
-import java.util.*
+import java.util.ServiceLoader
 
 /**
  * This interface is designed for initialize business modules which consist of a completed APP. How to collect Module Initializer?
