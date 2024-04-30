@@ -10,13 +10,8 @@ android {
     defaultConfig {
         minSdk AppConfig.minSdkVersion
         targetSdk AppConfig.compileSdkVersion
-        versionCode AppConfig.versionCode
-        versionName AppConfig.versionName
     }
 
-    lintOptions {
-        abortOnError false
-    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -26,6 +21,9 @@ android {
     kotlinOptions {
         jvmTarget = "11"
         freeCompilerArgs = ["-Xcontext-receivers"]
+    }
+    lint {
+        abortOnError false
     }
 
 }
