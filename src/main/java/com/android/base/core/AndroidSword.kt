@@ -1,4 +1,4 @@
-package com.android.base.app
+package com.android.base.core
 
 import android.content.Context
 import android.content.res.Configuration
@@ -9,6 +9,10 @@ import android.content.res.Configuration
  * @author Ztiany
  */
 object AndroidSword {
+
+    fun touch() {
+        // do nothing
+    }
 
     /** Application lifecycle delegate */
     private val coreAppDelegate = ApplicationDelegate()

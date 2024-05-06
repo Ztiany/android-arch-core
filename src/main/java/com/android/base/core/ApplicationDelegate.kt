@@ -1,4 +1,4 @@
-package com.android.base.app
+package com.android.base.core
 
 import android.app.Application
 import android.content.Context
