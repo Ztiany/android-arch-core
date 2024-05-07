@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.app.common.library)
+    alias(libs.plugins.vanniktech.maven.publisher)
 }
 
 android {
