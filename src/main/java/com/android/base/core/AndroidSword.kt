@@ -10,8 +10,8 @@ import android.content.res.Configuration
  */
 object AndroidSword {
 
-    fun touch() {
-        // do nothing
+    fun touchMe() {
+        // nothing to do.
     }
 
     /** Application lifecycle delegate */
