@@ -2,6 +2,7 @@ package com.android.base.core
 
 import android.content.Context
 import android.content.res.Configuration
+import timber.log.Timber
 
 /**
  * A set of useful tools for android development, just like a sword.
@@ -26,20 +27,29 @@ object AndroidSword {
         coreAppDelegate.setCrashProcessor(crashProcessor)
     }
 
-    /** 错误类型分类器。 */
-    var errorClassifier: ErrorClassifier? = null
-
-    /** dialog 最小展示时间。【单位：毫秒】  */
+    /**
+     * The time to display the dialog at least, even if the network request is completed.
+     * It is used to prevent the dialog from flashing.
+     */
     var minimalDialogDisplayTime: Long = 500
 
-    /** [Throwable] 到可读的 [CharSequence] 转换。 */
-    var errorConvert: ErrorConvert = object : ErrorConvert {
-        override fun convert(throwable: Throwable): CharSequence {
-            return throwable.message.toString()
+    /**
+     * It is used to classify the error type of the network request.
+     */
+    var requestErrorClassifier: RequestErrorClassifier? = null
+
+    /**
+     * The handler for the error of the network request.
+     */
+    var requestErrorHandler: RequestErrorHandler = object : RequestErrorHandler {
+        override fun handle(throwable: Throwable) {
+            return Timber.e("Error: ${throwable.message}")
         }
     }
 
-    /** 加载更多触发的方式，默认为 LoadMore Item 被 bind 时。*/
+    /**
+     * Load more trigger by scroll or by bind.
+     */
     var loadMoreTriggerByScroll: Boolean = false
 
     ///////////////////////////////////////////////////////////////////
@@ -69,17 +79,4 @@ object AndroidSword {
         coreAppDelegate.onTerminate()
     }
 
-}
-
-interface CrashProcessor {
-    fun uncaughtException(thread: Thread, ex: Throwable)
-}
-
-interface ErrorClassifier {
-    fun isNetworkError(throwable: Throwable): Boolean
-    fun isServerError(throwable: Throwable): Boolean
-}
-
-interface ErrorConvert {
-    fun convert(throwable: Throwable): CharSequence
 }
